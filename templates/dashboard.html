@@ -817,15 +817,14 @@
             // ── 🎯 "Locate Me" Google Maps Style (bottom-right) ──────────
             // ── 🎯 "Find Location" Control (bottom-right) ──────────
             // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
+            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
             const LocateControl = L.Control.extend({
                 options: { position: 'bottomright' },
                 onAdd: function () {
                     const wrapper = L.DomUtil.create('div');
-                    // FIXED: margin-bottom reduced to 15px to push it to the very bottom
-                    wrapper.style.cssText = 'margin-bottom: 15px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
+                    wrapper.style.cssText = 'margin-bottom: 20px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
 
                     const label = L.DomUtil.create('div', '', wrapper);
-                    // FIXED: Text updated to FIND LOCATION
                     label.innerHTML = 'FIND LOCATION';
                     label.style.cssText = 'background: rgba(0, 0, 0, 0.85); color: #00f2ff; font-size: 10px; padding: 5px 10px; border-radius: 6px; border: 1px solid #00f2ff; font-family: "Orbitron", sans-serif; white-space: nowrap; font-weight: bold; box-shadow: 0 4px 10px rgba(0,242,255,0.2); pointer-events: none; letter-spacing: 1px;';
 
@@ -838,11 +837,21 @@
                     L.DomEvent.on(btn, 'click', function (e) {
                         e.preventDefault();
                         showToast('📍 Fetching exact GPS...');
+                        
                         if (navigator.geolocation) {
-                            // CRITICAL FIX: maximumAge: 0 forces a fresh satellite ping
-                            // Uses global onGeoSuccess for the pulsing red dot
                             navigator.geolocation.getCurrentPosition(
-                                onGeoSuccess,
+                                function (pos) {
+                                    const lat = pos.coords.latitude;
+                                    const lng = pos.coords.longitude;
+                                    
+                                    map.flyTo([lat, lng], 16);
+                                    
+                                    const iconHtml = '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>';
+                                    const youAreHereIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+                                    L.marker([lat, lng], { icon: youAreHereIcon }).addTo(map).bindPopup('<b>📍 You are here</b>').openPopup();
+                                    
+                                    showToast('📍 Location found!', 3000);
+                                },
                                 function (err) {
                                     if (err.code === 1) { showToast('⚠️ Location permission blocked. Allow in settings.', 4000); } 
                                     else { showToast('⚠️ GPS weak. Showing default map.', 4000); }
