@@ -75,5 +75,23 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+    <!-- GPS Pre-fetch: silently warm the browser cache on the login page so
+         the dashboard's 3-second high-accuracy request hits the cache instantly. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function () {
+                        console.log('Location pre-fetched and cached.');
+                    },
+                    function (error) {
+                        console.warn('Pre-fetch location failed: ', error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                );
+            }
+        });
+    </script>
+
 </body>
 </html>
