@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 app = Flask(__name__)
 # Secret key from environment variable — NEVER hardcode in production
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-fallback-change-me-in-prod')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 # Razorpay keys from environment variables
 RAZORPAY_KEY_ID     = os.environ.get('RAZORPAY_KEY_ID',     'rzp_test_YOUR_KEY_HERE')
@@ -190,6 +191,7 @@ def login():
         if not user.is_active:
             return render_template('index.html', error="ACCESS DENIED: Your account is blocked.")
 
+        session.permanent = True
         session['user_id'] = user.id
         session['role'] = user.role
         session['name'] = user.name

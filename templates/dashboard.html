@@ -836,32 +836,27 @@
         if (document.getElementById('map')) {
             initMap(NASHIK[0], NASHIK[1]);
 
-            // STEP 2: Request real GPS position in parallel (does not block map render)
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    // ✅ SUCCESS — smoothly fly to real location & drop marker
-                    function (pos) {
-                        const { latitude, longitude } = pos.coords;
-                        // flyTo gives a smooth pan/zoom animation to the real position
-                        map.flyTo([latitude, longitude], 15, { animate: true, duration: 1.5 });
-                        addYouAreHereMarker(latitude, longitude);
-                        showToast('📍 GPS location acquired.');
-                    },
-                    // ❌ DENIED / ERROR — map already showing default view, just notify
-                    function (err) {
-                        let msg = '📍 Location unavailable. Showing default area.';
-                        if (err && err.code === 1) {
-                            msg = '📍 Location permission denied. Showing default area.';
-                        }
-                        showToast(msg);
-                    },
-                    // Strict GPS options required for mobile hardware activation
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                );
-            } else {
-                // Browser does not support geolocation — map still works on default view
-                showToast('📍 Geolocation not supported. Showing default area.');
-            }
+            // STEP 2: Use Leaflet's native locate API — more robust on mobile
+            map.locate({ setView: true, maxZoom: 15, enableHighAccuracy: true, timeout: 10000 });
+
+            // ✅ SUCCESS — drop a styled "You are here" circle marker
+            map.on('locationfound', function(e) {
+                L.circleMarker(e.latlng, {
+                    radius: 8,
+                    fillColor: '#ff0055',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup('You are here!').openPopup();
+                showToast('📍 GPS location acquired.');
+            });
+
+            // ❌ DENIED / ERROR — map already showing default Nashik view, just log
+            map.on('locationerror', function(e) {
+                console.log('Location access denied or failed.');
+                showToast('📍 Location unavailable. Showing default area.');
+            });
         }
 
         // ✅ NEW BOOK SLOT LOGIC
