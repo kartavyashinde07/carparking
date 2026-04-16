@@ -845,6 +845,20 @@
       }
     });
   </script>
+
+  <!-- ✅ SMART AUTO-REFRESH: Updates partner view without interrupting active interactions -->
+  <script>
+    setInterval(function () {
+      const modalOpen    = document.getElementById('add-parking-modal')
+                            && document.getElementById('add-parking-modal').classList.contains('active');
+      const searchActive = (document.getElementById('search-arrivals')  || { value: '' }).value.trim() !== '' ||
+                           (document.getElementById('search-payments')  || { value: '' }).value.trim() !== '';
+
+      if (!modalOpen && !searchActive) {
+        window.location.reload();
+      }
+    }, 12000);
+  </script>
 </body>
 
 </html>
