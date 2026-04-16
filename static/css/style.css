@@ -1,0 +1,581 @@
+/* --- BASE VARIABLES & SETUP --- */
+:root {
+    --primary: #00f2ff;
+    --accent: #ff0055;
+    --bg: #050505;
+    --text-main: #ffffff;
+    --text-muted: #888888;
+    --panel-bg: rgba(10, 10, 10, 0.85);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+}
+
+body.index-scroll-body {
+    height: 500vh; 
+    overflow-x: hidden;
+}
+
+.scroll-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none; 
+}
+
+#hero-lightpass {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* PERFORMANCE UPGRADE: Force Hardware (GPU) Acceleration */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* --- HERO TEXT (SCROLL TO PARK) --- */
+.hero-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    color: var(--primary);
+    text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+    pointer-events: none;
+}
+
+/* --- SCROLL INDICATOR (BOTTOM) --- */
+.scroll-indicator {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    transition: opacity 0.5s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #888;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+/* --- CUSTOM SCROLLBAR & CAR THUMB --- */
+.custom-scrollbar-track {
+    position: fixed;
+    top: 0;
+    right: 20px;
+    width: 2px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 50;
+}
+
+.car-thumb {
+    position: absolute;
+    left: -12px; 
+    top: 0;
+    font-size: 1.5rem;
+    transition: top 0.1s linear;
+}
+
+/* --- LOGIN WRAPPER & BOX --- */
+.login-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    /* Hidden by default until scrolled to bottom */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none; 
+    transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+.login-wrapper.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.login-box {
+    background: var(--panel-bg);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    width: 350px;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+}
+
+.login-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+    margin: 0 0 10px 0;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.login-header .line {
+    height: 2px;
+    width: 60px;
+    background: var(--accent);
+    margin: 0 auto 30px auto;
+}
+
+/* --- FORM INPUTS (FLOATING LABELS) --- */
+.input-group {
+    position: relative;
+    margin-bottom: 35px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 1.1rem;
+    color: #fff;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #555;
+    outline: none;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.input-group label {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    font-size: 1rem;
+    color: #888;
+    pointer-events: none;
+    transition: 0.3s ease all;
+}
+
+.input-group input:focus ~ label,
+.input-group input:valid ~ label {
+    top: -20px;
+    font-size: 0.8rem;
+    color: var(--primary);
+    letter-spacing: 1px;
+}
+
+.input-group .bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: block;
+}
+
+.input-group .bar:before {
+    content: '';
+    height: 2px;
+    width: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: var(--primary);
+    transition: 0.3s ease all;
+}
+
+.input-group input:focus ~ .bar:before {
+    width: 100%;
+}
+
+/* --- SUBMIT BUTTON --- */
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s ease;
+    margin-top: 10px;
+    border-radius: 4px;
+}
+
+.login-btn span {
+    position: relative;
+    z-index: 2;
+}
+
+.login-btn .btn-bg {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    z-index: 1;
+    transition: left 0.3s ease;
+}
+
+.login-btn:hover {
+    color: #000;
+}
+
+.login-btn:hover .btn-bg {
+    left: 0;
+}
+
+/* --- ERROR MESSAGES --- */
+.error-msg {
+    margin-top: 20px;
+    color: var(--accent);
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: 1px solid var(--accent);
+    padding: 10px;
+    background: rgba(255, 0, 85, 0.1);
+    border-radius: 4px;
+}
+
+/* --- PREMIUM UI COMPONENTS --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: rgba(10, 10, 15, 0.7);
+    width: 900px;
+    max-width: 95%;
+    padding: 35px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 242, 255, 0.15), inset 0 0 20px rgba(0, 242, 255, 0.05);
+    display: flex;
+    gap: 30px;
+    position: relative;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.close-btn:hover {
+    color: var(--accent);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .modal-body {
+        flex-direction: column;
+    }
+}
+
+.form-section, .map-section {
+    flex: 1;
+}
+
+.map-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--primary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="file"] {
+    padding: 8px;
+}
+
+.form-group input[type="file"]::file-selector-button {
+    background: rgba(0, 242, 255, 0.1);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    transition: 0.3s;
+    margin-right: 15px;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+    background: var(--primary);
+    color: #000;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: var(--primary);
+    background: rgba(0, 242, 255, 0.05);
+    outline: none;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.form-group select option {
+    background: #111;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    padding: 10px;
+}
+
+.btn-primary {
+    background: rgba(0, 242, 255, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 12px 20px;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.3s;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: inline-block;
+}
+
+#submit-btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary);
+    color: black;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+}
+
+.btn-primary:disabled {
+    border-color: #444;
+    color: #666;
+    background: rgba(255,255,255,0.05);
+    cursor: not-allowed;
+}
+
+/* Beautiful custom UI for partner modal inputs specifically */
+#partner-map {
+    border: 1px solid rgba(0, 242, 255, 0.4) !important;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* --- PREMIUM PROFILE DROPDOWN --- */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+    z-index: 100;
+}
+
+.profile-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, #0055ff 100%);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+    user-select: none;
+    border: 2px solid transparent;
+}
+
+.profile-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
+    border: 2px solid #fff;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 130%;
+    right: 0;
+    width: 250px;
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 242, 255, 0.1);
+    
+    /* Animation defaults */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transform-origin: top right;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-header {
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.dropdown-header strong {
+    display: block;
+    color: var(--primary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.dropdown-header small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.dropdown-menu hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 5px 0 10px 0;
+}
+
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff !important;
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    transition: background 0.2s, padding-left 0.2s, color 0.2s;
+    border: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+.dropdown-menu a.admin-link {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 12px 20px !important;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(0, 242, 255, 0.1);
+    padding-left: 25px !important;
+    color: var(--primary) !important;
+}
+
+.dropdown-logout {
+    color: var(--accent) !important;
+}
+
+.dropdown-logout:hover {
+    background: rgba(255, 0, 85, 0.1) !important;
+    color: #ff3377 !important;
+}
+
+/* --- STATUS BADGES --- */
+.badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+    display: inline-block;
+}
+
+.badge-active {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+    border: 1px solid #00ff88;
+}
+
+.badge-occupied {
+    background: rgba(255, 0, 85, 0.1);
+    color: #ff0055;
+    border: 1px solid #ff0055;
+}
+
+.badge-completed {
+    background: rgba(255, 204, 0, 0.1);
+    color: #ffcc00;
+    border: 1px solid #ffcc00;
+}

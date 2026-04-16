@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard | LUXURY PARKING</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        /* --- THEME MATCHING --- */
+        :root {
+            --primary: #00f2ff;
+            --accent: #ff0055;
+            --bg: #050505;
+            --panel: rgba(15, 15, 15, 0.85);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .header-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            border: 1px solid #333;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-left: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: 0.3s ease;
+        }
+
+        .header-links .admin-link {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .header-links .logout:hover {
+            background: rgba(255, 0, 85, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* --- LAYOUT --- */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .booking-item>div {
+                width: 100%;
+            }
+
+            .booking-item>div:last-child {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .booking-item>div:last-child>a,
+            .booking-item>div:last-child>button,
+            .booking-item>.end-btn {
+                width: 100%;
+                margin: 0;
+                text-align: center;
+                box-sizing: border-box;
+            }
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* --- FORMS --- */
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px 0;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.3s ease;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+
+        /* --- STATS --- */
+        .stat-box {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .stat {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* --- BOOKING ITEMS --- */
+        .booking-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 4px 4px 0;
+            transition: 0.3s ease;
+        }
+
+        .booking-item.active {
+            border-left-color: var(--primary);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .booking-item.pending {
+            border-left-color: #ffcc00;
+            background: rgba(255, 204, 0, 0.05);
+        }
+
+        .booking-item.offline_pending {
+            border-left-color: var(--accent);
+            background: rgba(255, 0, 85, 0.05);
+        }
+
+        .booking-item.completed {
+            opacity: 0.7;
+        }
+
+        .booking-info b {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-main);
+            letter-spacing: 1px;
+        }
+
+        .booking-info small {
+            display: block;
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .price {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-left: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .status-badge.active {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .status-badge.pending {
+            background: rgba(255, 204, 0, 0.1);
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+        }
+
+        .status-badge.completed {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+        }
+
+        .status-badge.offline_pending {
+            background: rgba(255, 0, 85, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .end-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+
+        .end-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+        }
+
+        /* --- NEW: PAYMENT MODAL CSS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            width: 480px;
+            text-align: center;
+            animation: popIn 0.3s ease-out forwards;
+            display: block !important;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .payment-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            color: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            width: 100%;
+            display: block;
+        }
+
+        .payment-btn:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .receipt-box {
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px dashed var(--primary);
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            font-family: monospace;
+            color: #ccc;
+            font-size: 1.1rem;
+        }
+
+        .leaflet-routing-container {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SYSTEM DASHBOARD</h1>
+        <div class="header-links">
+            {% if session.get('role') == 'admin' %}
+            <a href="/admin" class="admin-link">ADMIN PANEL</a>
+            {% endif %}
+            <div class="profile-dropdown">
+                <div class="profile-circle" onclick="toggleDropdown()">
+                    {{ session.get('name', 'U')[0] | upper }}
+                </div>
+                <div class="dropdown-menu" id="profileDropdown">
+                    <div class="dropdown-header">
+                        <strong>{{ session.get('name', 'User') }}</strong>
+                        <small>{{ session.get('role', 'user') | title }}</small>
+                    </div>
+                    <hr>
+                    <a href="/my_info">👤 My Info</a>
+                    <a href="/subscription">⭐ Subscription</a>
+                    <a href="/logout" class="dropdown-logout">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid">
+
+        <div>
+            <div class="panel" style="padding: 10px;">
+                <h2 style="padding-left: 15px; padding-top: 10px;">NEARBY PARKING (LIVE MAP)</h2>
+                <div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+            </div>
+
+            <div class="panel stat-box">
+                <div class="stat">{{ available_count }}</div>
+                <div style="color: var(--text-muted); font-weight: bold; letter-spacing: 1px;">AVAILABLE SLOTS</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>MY LOGS</h2>
+
+            {% if bookings %}
+            {% for booking in bookings|reverse %}
+            <div class="booking-item {{ booking.status }}">
+                <div class="booking-info">
+                    <b>Slot ID: #{{ booking.slot_id }}</b>
+                    <span class="status-badge {{ booking.status }}">{{ booking.status }}</span>
+
+                    <small>
+                        {% if booking.status == 'pending' %}
+                        Awaiting Arrival Confirmation <br>
+                        {% else %}
+                        Time In: {{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}
+                        <br>
+                        {% endif %}
+                        Vehicle ID: #{{ booking.vehicle_id }}
+                    </small>
+
+                    {% if booking.status == 'completed' %}
+                    <span class="price">₹ {{ booking.total_price }}</span>
+                    {% endif %}
+                </div>
+
+                {% if booking.status == 'pending' %}
+                {% set ns = namespace(lat=None, lng=None, name="") %}
+                {% for s in slots %}
+                {% if s.id == booking.slot_id %}
+                {% set ns.lat = s.lat %}
+                {% set ns.lng = s.lng %}
+                {% set ns.name = s.slot_number %}
+                {% endif %}
+                {% endfor %}
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        {% if ns.lat and ns.lng %}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
+                            target="_blank" class="payment-btn"
+                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                            START NAVIGATION</a>
+                        {% else %}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
+                            target="_blank" class="payment-btn"
+                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                            START NAVIGATION (BY NAME)</a>
+                        {% endif %}
+                        <div style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                            ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
+                        </div>
+                        <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')">✖ CANCEL</button>
+                    </div>
+
+                    <script>
+                        window.pendingBookingTimers = window.pendingBookingTimers || [];
+                        window.pendingBookingTimers.push({
+                            id: "{{ booking.id }}",
+                            remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
+                        });
+                    </script>
+                {% endif %}
+
+                {% if booking.status == 'active' %}
+                <button class="end-btn" onclick="endBooking('{{ booking.id }}', '{{ booking.vehicle_id }}')">END
+                    SESSION</button>
+                {% endif %}
+
+                {% if booking.status == 'offline_pending' %}
+                <script>
+                    // FIXED: Wrapping Jinja variables inside Number() and quotes completely clears the 4 VS Code Syntax Errors
+                    window.pendingOfflineBooking = {
+                        id: "{{ booking.id }}",
+                        vehicle_id: "{{ booking.vehicle_id }}",
+                        remaining: Number("{{ booking.remaining_offline_seconds }}"),
+                        amount: Number("{{ booking.total_price }}")
+                    };
+                </script>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="color: var(--text-muted); text-align: center; padding: 20px;">
+                No booking records found in the system.
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div id="slots-data-container" style="display: none;">
+        {% for s in slots %}
+        {% if s.lat and s.lng %}
+        <div class="slot-data-item" data-lat="{{ s.lat }}" data-lng="{{ s.lng }}" data-name="{{ s.slot_number }}"
+            data-occupied="{{ 'true' if s.is_occupied else 'false' }}"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div id="parking-modal" class="modal-overlay hidden">
+        <div class="modal-content panel">
+            <h3>PARKING OPTION</h3>
+            <p style="color: var(--text-muted);">Slot <b id="selected-slot-id" style="color: white;">---</b> selected.
+            </p>
+
+            <input type="text" id="plate" placeholder="Vehicle Plate (e.g. MH-XX-1234)" autocomplete="off"
+                style="width: 90%; margin-left: 5%;">
+            <select id="type" style="width: 90%; margin-left: 5%;">
+                <option value="4-wheeler">4-Wheeler (Car)</option>
+                <option value="2-wheeler">2-Wheeler (Bike)</option>
+            </select>
+
+            <button id="gmaps-btn" class="payment-btn"
+                style="border-color: #00aaff; color: #00aaff; width: 90%; margin: 15px auto 5px auto; font-weight: bold; text-shadow: 0 0 10px rgba(0,170,255,0.4); display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2em;">🗺️</span> START NAVIGATION
+            </button>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; padding: 0 15px;">
+                <button class="payment-btn" onclick="initBooking('self')"
+                    style="border-color: #00ff88; color: #00ff88; width: 45%;">🚗 SELF
+                    PARK<br><small>₹50/hour</small></button>
+                <button class="payment-btn" onclick="initBooking('valet')"
+                    style="border-color: #ffcc00; color: #ffcc00; width: 45%;">🤵 CALL
+                    VALET<br><small>₹150/hour</small></button>
+            </div>
+            <button class="end-btn" style="margin-top: 15px; width: 90%;"
+                onclick="document.getElementById('parking-modal').classList.add('hidden')">CANCEL</button>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal-overlay hidden">
+        <div class="modal-content panel">
+
+            <div id="pay-screen-main">
+                <h3>SELECT PAYMENT MODE</h3>
+                <p style="color: var(--text-muted); font-size: 1.2rem;">Total Due: <b id="display-amount"
+                        style="color: var(--primary); font-size: 2rem;">₹0</b></p>
+                <button class="payment-btn" onclick="initOnlinePayment()">⚡ PAY ONLINE (RAZORPAY)</button>
+                <button class="payment-btn" onclick="initOfflinePayment()">💵 OFFLINE (PAY AT COUNTER)</button>
+                <button class="end-btn" style="margin-top: 15px; width: 100%; border-color: #555; color: #888;"
+                    onclick="document.getElementById('payment-modal').classList.add('hidden')">CANCEL</button>
+            </div>
+
+            <div id="pay-screen-offline-wait" class="hidden">
+                <h3 style="color: #ffcc00;">AWAITING CONFIRMATION</h3>
+                <p style="font-size: 1.1rem; color: #fff;">Please pay the parking owner.</p>
+                <div
+                    style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.2); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: var(--primary); font-family: 'Orbitron';">Vehicle: <span
+                            id="offline-vehicle-plate"
+                            style="color: #fff; font-weight: bold; letter-spacing: 1px;">---</span></p>
+                    <p style="margin: 5px 0 0 0; color: #888; font-size: 0.9rem; font-family: 'Orbitron';">Booking ID:
+                        #<span id="offline-booking-id">---</span></p>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">The owner will verify your vehicle plate.</p>
+                <div style="font-family: 'Orbitron'; font-size: 3rem; color: var(--accent); margin: 20px 0;"
+                    id="offline-timer">03:00</div>
+                <p style="color: #888; font-size: 0.8rem;">If not confirmed by partner, time will resume.</p>
+                <button class="end-btn" style="margin-top: 10px; width: 100%;"
+                    onclick="cancelOfflinePayment()">CANCEL</button>
+            </div>
+
+            <div id="pay-screen-receipt" class="hidden">
+                <h3 style="color: #00ff88;">✅ PAYMENT SUCCESSFUL</h3>
+                <div class="receipt-box">
+                    <div style="text-align: center; margin-bottom: 15px; color: var(--text-main);"><b>LUXURY PARKING
+                            INC.</b></div>
+                    <div>---------------------------------</div>
+                    <div>STATUS: <span style="color:#00ff88; float: right;">PAID</span></div>
+                    <div>METHOD: <span id="receipt-method" style="float: right;"></span></div>
+                    <div>AMOUNT: <span id="receipt-amount" style="color: var(--primary); float: right;"></span></div>
+                    <div>DATE: <span id="receipt-date" style="float: right; font-size: 0.9rem;"></span></div>
+                    <div>---------------------------------</div>
+                    <div style="text-align: center; margin-top: 15px; color: var(--primary);">Have a safe drive! 🚗
+                    </div>
+                </div>
+                <button type="button" onclick="window.location.reload()"
+                    style="margin-top: 20px; background: #00ff88; color: #000; border: none; padding: 15px; font-size: 1.2rem; width: 100%; cursor: pointer;">CLOSE
+                    & FINISH</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="custom-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content panel" style="width: 400px; padding: 30px;">
+            <h3 style="color: var(--accent); margin-top: 0; font-size: 1.5rem;">⚠️ REQUIRED CONFIRMATION</h3>
+            <p id="confirm-message" style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 25px;">Are you sure?</p>
+            <div style="display: flex; gap: 15px;">
+                <button id="confirm-yes-btn" class="payment-btn" style="border-color: var(--accent); color: var(--accent); margin: 0; width: 50%; font-weight: bold;">PROCEED</button>
+                <button id="confirm-no-btn" class="payment-btn" style="border-color: #555; color: #888; margin: 0; width: 50%;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ✅ CUSTOM CONFIRMATION UI
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-confirm-modal');
+                document.getElementById('confirm-message').innerText = message;
+                modal.classList.remove('hidden');
+
+                document.getElementById('confirm-yes-btn').onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(true);
+                };
+
+                document.getElementById('confirm-no-btn').onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(false);
+                };
+            });
+        }
+
+        // ✅ SAFE JSON PARSER
+        async function safeJson(res) {
+            try {
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Not JSON");
+                }
+                return await res.json();
+            } catch (err) {
+                alert("Session expired or server error. Please login again.");
+                window.location.href = "/";
+                return null;
+            }
+        }
+
+        // ✅ MAP INITIALIZATION
+        let map;
+        if (document.getElementById('map')) {
+            map = L.map('map').setView([20.0110, 73.7903], 14); // Nashik Coordinates
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Dynamic Parking Lots from database via HTML attributes
+            const rawSlots = Array.from(document.querySelectorAll('.slot-data-item')).map(el => ({
+                lat: parseFloat(el.dataset.lat),
+                lng: parseFloat(el.dataset.lng),
+                name: el.dataset.name,
+                occupied: el.dataset.occupied === 'true'
+            }));
+
+            // Group by location
+            const lotsMap = {};
+
+            rawSlots.forEach(s => {
+                let key = s.lat.toFixed(5) + "_" + s.lng.toFixed(5);
+                if (!lotsMap[key]) {
+                    lotsMap[key] = { lat: s.lat, lng: s.lng, name: s.name, available: 0 };
+                }
+                if (!s.occupied) {
+                    lotsMap[key].available++;
+                }
+            });
+
+            const lots = Object.values(lotsMap);
+
+            lots.forEach((lot) => {
+                let marker = L.circleMarker([lot.lat, lot.lng], {
+                    radius: 12,
+                    fillColor: "#00f2ff",
+                    color: "#fff",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                marker.on('click', () => {
+                    window.selectedLotName = lot.name;
+                    document.getElementById('selected-slot-id').innerText = lot.name + " (" + lot.available + " free)";
+                    document.getElementById('parking-modal').classList.remove('hidden');
+
+                    const gmapsBtn = document.getElementById('gmaps-btn');
+                    if (gmapsBtn) {
+                        gmapsBtn.onclick = () => {
+                            const destinationUrl = `https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`;
+                            window.open(destinationUrl, '_blank');
+                        };
+                    }
+                });
+            });
+        }
+
+        // ✅ NEW BOOK SLOT LOGIC
+        async function initBooking(serviceType) {
+            const plate = document.getElementById("plate").value.trim();
+            const type = document.getElementById("type").value;
+
+            if (!plate) return alert("Vehicle plate is required.");
+
+            if (serviceType === 'valet') {
+                alert("Valet assigned. Please wait for pickup.");
+            }
+
+            // Call the original backend route
+            const res = await fetch("/api/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    plate_number: plate,
+                    vehicle_type: type,
+                    service_type: serviceType,
+                    location_name: window.selectedLotName
+                })
+            });
+            const data = await safeJson(res);
+            if (data && data.success) {
+                window.location.reload();
+            } else {
+                alert("ERROR: " + (data ? data.message : "Failed"));
+            }
+        }
+
+        // ✅ CANCEL BOOKING LOGIC
+        async function cancelBooking(id) {
+            const confirmed = await customConfirm("Are you sure you want to cancel this pending booking?");
+            if (!confirmed) return;
+            try {
+                let res = await fetch(`/api/cancel_booking/${id}`, { method: 'POST' });
+                let data = await safeJson(res);
+                if (data && data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data ? data.message : "Error cancelling booking.");
+                }
+            } catch (e) {
+                alert("Connection error");
+            }
+        }
+
+        // --- PAYMENT SYSTEM LOGIC ---
+        let currentAmountToPay = 0;
+        let currentBookingId = null;
+        let currentVehicleId = null;
+        let pollInterval = null;
+        let countdownInterval = null;
+        const modal = document.getElementById('payment-modal');
+
+        async function endBooking(id, vehicleId) {
+            const confirmed = await customConfirm("Are you sure you want to end this parking session?");
+            if (!confirmed) return;
+            currentBookingId = id;
+            currentVehicleId = vehicleId;
+
+            document.getElementById('offline-booking-id').innerText = id;
+            document.getElementById('offline-vehicle-plate').innerText = vehicleId || '---';
+
+            // Contact backend to calculate price
+            const res = await fetch("/api/get_bill/" + id);
+            const data = await safeJson(res);
+
+            if (!data) return;
+
+            if (data.success) {
+                currentAmountToPay = data.amount;
+                document.getElementById('display-amount').innerText = "₹" + currentAmountToPay;
+                modal.classList.remove('hidden');
+                showScreen('pay-screen-main');
+            } else {
+                alert("Failed to calculate bill.");
+            }
+        }
+
+        // ✅ UI NAVIGATOR: Hides all screens, shows the one requested
+        function showScreen(screenId) {
+            const screens = [
+                'pay-screen-main', 'pay-screen-online',
+                'pay-screen-offline-wait', 'pay-screen-receipt'
+            ];
+
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(screenId);
+            if (target) target.classList.remove('hidden');
+        }
+
+        // ✅ RAZORPAY ONLINE FLOW
+        async function initOnlinePayment() {
+            const res = await fetch("/api/init_online_payment/" + currentBookingId, { method: "POST" });
+            const data = await safeJson(res);
+            if (!data || !data.success) return alert("Failed to init payment: " + (data ? data.message : ''));
+
+            var options = {
+                "key": data.key,
+                "amount": data.amount * 100,
+                "currency": "INR",
+                "name": "N-PARK SUPREME",
+                "description": "Parking Fee",
+                "order_id": data.order_id,
+                "handler": async function (response) {
+                    const verifyRes = await fetch("/api/verify_payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(response)
+                    });
+                    const vData = await safeJson(verifyRes);
+                    if (vData && vData.success) {
+                        generateReceipt("RAZORPAY (ONLINE)");
+                    } else {
+                        alert("Payment verification failed! " + (vData ? vData.message : ''));
+                    }
+                },
+                "theme": { "color": "#00f2ff" }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+
+        // ✅ OFFLINE FLOW WITH TIMER
+        async function initOfflinePayment() {
+            const res = await fetch("/api/init_offline_payment/" + currentBookingId, { method: "POST" });
+            const data = await safeJson(res);
+            if (!data || !data.success) return alert("Failed to init offline payment");
+
+            showScreen('pay-screen-offline-wait');
+            startOfflineTimer(180); // 3 minutes
+
+            clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                let stRes = await fetch("/api/booking_status/" + currentBookingId);
+                let stData = await safeJson(stRes);
+                if (stData && stData.status === 'completed') {
+                    stopOfflineTimer();
+                    generateReceipt("CASH (OFFLINE)");
+                }
+            }, 3000);
+        }
+
+        function startOfflineTimer(durationSeconds) {
+            let timer = durationSeconds;
+            const display = document.getElementById('offline-timer');
+
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(async () => {
+                let minutes = parseInt(timer / 60, 10);
+                let seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    stopOfflineTimer();
+                    await cancelOfflinePayment(true); // auto cancel
+                }
+            }, 1000);
+        }
+
+        function stopOfflineTimer() {
+            clearInterval(countdownInterval);
+            clearInterval(pollInterval);
+        }
+
+        async function cancelOfflinePayment(auto = false) {
+            if (!auto) {
+                const confirmed = await customConfirm("Cancel cash payment? Your time will resume.");
+                if (!confirmed) return;
+            }
+
+            stopOfflineTimer();
+            await fetch("/api/cancel_offline_payment/" + currentBookingId, { method: "POST" });
+            modal.classList.add('hidden');
+            if (auto) alert("Time expired! Partner didn't confirm. The parking time has resumed.");
+            window.location.reload();
+        }
+
+        function generateReceipt(method) {
+            document.getElementById('receipt-method').innerText = method;
+            document.getElementById('receipt-amount').innerText = "₹" + currentAmountToPay;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+            showScreen('pay-screen-receipt');
+        }
+    </script>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        function toggleDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
+        }
+        // Close dropdown if clicked outside
+        window.addEventListener('click', function (event) {
+            if (!event.target.matches('.profile-circle')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('active')) {
+                        openDropdown.classList.remove('active');
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.pendingOfflineBooking) {
+                currentBookingId = window.pendingOfflineBooking.id;
+                currentVehicleId = window.pendingOfflineBooking.vehicle_id;
+                currentAmountToPay = window.pendingOfflineBooking.amount;
+
+                const bIdEl = document.getElementById('offline-booking-id');
+                if (bIdEl) bIdEl.innerText = currentBookingId;
+                const bVehEl = document.getElementById('offline-vehicle-plate');
+                if (bVehEl) bVehEl.innerText = currentVehicleId || '---';
+
+                modal.classList.remove('hidden');
+                showScreen('pay-screen-offline-wait');
+                startOfflineTimer(window.pendingOfflineBooking.remaining);
+
+                pollInterval = setInterval(async () => {
+                    try {
+                        let stRes = await fetch("/api/booking_status/" + currentBookingId);
+                        if (!stRes.ok) return;
+                        let stData = await stRes.json();
+                        if (stData && stData.status === 'completed') {
+                            stopOfflineTimer();
+                            generateReceipt("CASH (OFFLINE)");
+                        } else if (stData && stData.status === 'active') {
+                            // Automatically canceled by server/timeout
+                            window.location.reload();
+                        }
+                    } catch (e) { }
+                }, 3000);
+            }
+
+            // ✅ PENDING BOOKING TIMER LOGIC
+            if (window.pendingBookingTimers && window.pendingBookingTimers.length > 0) {
+                setInterval(() => {
+                    window.pendingBookingTimers.forEach(b => {
+                        if (b.remaining > 0) {
+                            b.remaining--;
+                            let m = Math.floor(b.remaining / 60);
+                            let s = b.remaining % 60;
+                            let el = document.getElementById("pending-timer-" + b.id);
+                            if (el) {
+                                el.innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                            }
+                        } else if (b.remaining === 0) {
+                            b.remaining = -1; // Fire once
+                            alert("Pending booking timeout! The booking was cancelled automatically.");
+                            window.location.reload();
+                        }
+                    });
+                }, 1000);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

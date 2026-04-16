@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | LUXURY PARKING</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Subtle glowing background like the dashboard */
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 60%);
+        }
+
+        /* --- REGISTRATION BOX --- */
+        .register-box {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            width: 380px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+        }
+
+        .header h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .header .line {
+            height: 2px;
+            width: 60px;
+            background: var(--accent);
+            margin: 0 auto 30px auto;
+        }
+
+        /* --- LINKS & ERRORS --- */
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .login-link a {
+            color: var(--text-main);
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-box">
+        <div class="header">
+            <h2>NEW ACCOUNT</h2>
+            <div class="line"></div>
+        </div>
+
+        {% if error %}
+        <div class="error-msg">
+            ERROR: {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/register" method="POST">
+            
+            <div class="input-group">
+                <input type="text" id="name" name="name" required autocomplete="off">
+                <label for="name">FULL NAME</label>
+                <div class="bar"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="email" name="email" required autocomplete="off">
+                <label for="email">EMAIL (CUSTOMER ID)</label>
+                <div class="bar"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="phone" name="phone" required autocomplete="off">
+                <label for="phone">PHONE NUMBER</label>
+                <div class="bar"></div>
+            </div>
+
+            <div class="input-group" style="position: relative;">
+                <input type="password" id="password" name="password" required autocomplete="new-password">
+                <label for="password">PASSWORD</label>
+                <div class="bar"></div>
+                
+                <span onclick="togglePassword()"
+                      style="position:absolute; right:10px; top:50%;
+                             transform:translateY(-50%);
+                             cursor:pointer; color: var(--primary);">
+                    👁
+                </span>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <span>CREATE ACCOUNT</span>
+                <div class="btn-bg"></div>
+            </button>
+        </form>
+
+        <div class="login-link">
+            <a href="/">← Return to System Login</a>
+        </div>
+    </div>
+
+    <script>
+        // Toggles password visibility
+        function togglePassword() {
+            const pass = document.getElementById("password");
+            pass.type = pass.type === "password" ? "text" : "password";
+        }
+    </script>
+
+</body>
+</html>

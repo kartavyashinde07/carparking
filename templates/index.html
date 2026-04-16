@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Login | LUXURY PARKING</title>
+
+    <link rel="preload" href="/static/assets/car_sequence/0001.jpg" as="image">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="index-scroll-body">
+
+    <div class="scroll-container">
+        <canvas id="hero-lightpass"></canvas>
+    </div>
+
+    <div id="hero-text" class="hero-text">
+        <h1>SCROLL TO PARK</h1>
+    </div>
+
+    <div class="custom-scrollbar-track">
+        <div id="car-thumb" class="car-thumb">
+            🚗
+        </div>
+    </div>
+
+    <div class="login-wrapper" id="login-wrapper">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>SYSTEM ACCESS</h2>
+                <div class="line"></div>
+            </div>
+
+            <form method="POST" action="/login">
+
+                <div class="input-group">
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           required
+                           autocomplete="off">
+                    <label for="username">CUSTOMER ID</label>
+                    <div class="bar"></div>
+                </div>
+
+                <div class="input-group" style="position: relative;">
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           required
+                           autocomplete="off">
+
+                    <label for="password">PASSWORD</label>
+                    <div class="bar"></div>
+
+                    <span onclick="togglePassword()"
+                          style="position:absolute; right:10px; top:50%;
+                                 transform:translateY(-50%);
+                                 cursor:pointer; color: var(--primary);">
+                        👁
+                    </span>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>INITIALIZE ENGINE</span>
+                    <div class="btn-bg"></div>
+                </button>
+
+                <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; display: flex; justify-content: center; gap: 15px;">
+                    <a href="/register"
+                       style="color: var(--primary); text-decoration: none; letter-spacing: 1px;">
+                        CREATE ACCOUNT
+                    </a>
+                    <span style="color: rgba(255, 255, 255, 0.3);">|</span>
+                    <a href="/partner_register"
+                       style="color: #ffcc00; text-decoration: none; letter-spacing: 1px;">
+                        PARTNER ONBOARDING
+                    </a>
+                </div>
+
+            </form>
+
+            {% if error %}
+            <div class="error-msg">
+                {{ error }}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="scroll-indicator" id="scroll-indicator">
+        <span>SCROLL TO INITIATE</span>
+        <div class="arrow"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <script>
+        // Toggles password visibility
+        function togglePassword() {
+            const pass = document.getElementById("password");
+            pass.type = pass.type === "password" ? "text" : "password";
+        }
+
+        // ✅ UX FIX: Pure JS teleport to bottom on error
+        window.addEventListener('DOMContentLoaded', () => {
+            const errorBox = document.querySelector('.error-msg');
+            
+            if (errorBox) {
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'auto' /* 'auto' jumps instantly without smooth scrolling */
+                    });
+                }, 50); 
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partner Console | N-PARK SUPREME</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    /* --- THEME & LAYOUT --- */
+    .partner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .stat-card {
+      background: var(--panel-bg, #111);
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      color: var(--text-muted, #888);
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-family: "Orbitron";
+      font-size: 2.2rem;
+      color: var(--primary, #00f2ff);
+      margin: 10px 0;
+    }
+
+    /* --- COLORS --- */
+    .cash-color {
+      color: #ffcc00 !important;
+    }
+
+    .online-color {
+      color: #00ff88 !important;
+    }
+
+    /* --- LIVE INDICATOR --- */
+    .live-indicator {
+      height: 10px;
+      width: 10px;
+      background: #00ff88;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* --- SLOT STYLING (FIXED VS CODE ERRORS) --- */
+    .slot-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 15px;
+    }
+
+    .slot-box {
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .slot-box:hover {
+      transform: translateY(-3px);
+    }
+
+    /* Classes instead of inline Jinja to stop VS Code errors */
+    .occupied {
+      border: 1px solid #ff0055;
+      background: rgba(255, 0, 85, 0.1);
+    }
+
+    .vacant {
+      border: 1px solid #00f2ff;
+      background: rgba(0, 242, 255, 0.05);
+    }
+
+    /* --- SEARCH UI REFINEMENT --- */
+    .search-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .cyber-search {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--primary, #00f2ff);
+      color: white;
+      padding: 8px 15px 8px 35px;
+      border-radius: 20px;
+      width: 250px;
+      font-family: "Rajdhani", sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+    }
+
+    .cyber-search:focus {
+      box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+      width: 280px;
+      background: rgba(0, 30, 40, 0.8);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      color: var(--primary, #00f2ff);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .panel {
+      background: rgba(20, 20, 20, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+
+<body>
+  <header style="
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+    <h1 style="
+          color: var(--primary, #00f2ff);
+          font-family: 'Orbitron';
+          font-size: 1.5rem;
+        ">
+      PARTNER CONSOLE
+    </h1>
+    <div>
+      <button class="btn-primary" style="margin-right: 20px; padding: 8px 15px" onclick="openParkingModal()">
+        + SUBMIT NEW PARKING LAND
+      </button>
+      <span style="margin-right: 20px; color: white"><span class="live-indicator"></span> LIVE</span>
+      <div class="profile-dropdown" style="margin-left: 20px">
+        <div class="profile-circle" onclick="toggleDropdown()">
+          {{ session.get('name', 'U')[0] | upper }}
+        </div>
+        <div class="dropdown-menu" id="profileDropdown">
+          <div class="dropdown-header">
+            <strong>{{ session.get('name', 'User') }}</strong>
+            <small>{{ session.get('role', 'user') | title }}</small>
+          </div>
+          <hr />
+          <a href="/my_info">👤 My Info</a>
+          <a href="/subscription">⭐ Subscription</a>
+          <a href="/logout" class="dropdown-logout">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Modal for adding parking -->
+  <div id="add-parking-modal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeParkingModal()">&times;</button>
+      <div class="modal-body">
+        <div class="form-section">
+          <h3 style="
+                color: var(--primary);
+                font-family: 'Orbitron';
+                margin-top: 0;
+                border-bottom: 1px solid #333;
+                padding-bottom: 10px;
+              ">
+            Parking Land App
+          </h3>
+          <form action="/partner/submit_parking" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <label>Location Name</label>
+              <div style="display: flex; gap: 10px">
+                <input type="text" id="location-name-input" name="slot_number" placeholder="e.g. Ozar Main Square"
+                  required style="flex-grow: 1" />
+                <button type="button" class="btn-primary" onclick="searchLocation()"
+                  style="width: auto; margin-top: 0; padding: 0 15px" title="Find on Map">
+                  🔍
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Vehicle Type Supported</label>
+              <select name="type">
+                <option value="4-wheeler">4-Wheeler (Car)</option>
+                <option value="2-wheeler">2-Wheeler (Bike)</option>
+                <option value="both">Both (2-Wheeler & 4-Wheeler)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Total Slot Capacity</label>
+              <input type="number" name="capacity" placeholder="e.g. 10" required min="1" />
+            </div>
+
+            <div class="form-group">
+              <label>Land Photo (Mandatory)</label>
+              <input type="file" name="photo" required accept="image/*" />
+            </div>
+
+            <div class="form-group">
+              <label>Land Verification Doc (Mandatory)</label>
+              <input type="file" name="doc" required accept="application/pdf,image/*" />
+            </div>
+
+            <!-- Hidden fields populated by Map Click -->
+            <input type="hidden" name="lat" id="form-lat" />
+            <input type="hidden" name="lng" id="form-lng" />
+
+            <p id="coord-status" style="
+                  color: var(--text-muted);
+                  font-size: 0.85rem;
+                  margin-top: -10px;
+                ">
+              Status: Please select a location on the map.
+            </p>
+
+            <button type="submit" class="btn-primary" id="submit-btn" disabled>
+              SUBMIT FOR VERIFICATION
+            </button>
+          </form>
+        </div>
+        <div class="map-section">
+          <h3 style="
+                color: var(--primary);
+                font-family: 'Orbitron';
+                margin-top: 0;
+                border-bottom: 1px solid #333;
+                padding-bottom: 10px;
+              ">
+            Select from Map
+          </h3>
+          <div id="partner-map" style="
+                width: 100%;
+                height: 350px;
+                border-radius: 8px;
+                border: 1px solid rgba(0, 242, 255, 0.3);
+              "></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="partner-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Revenue (Today)</div>
+      <div class="stat-value">₹{{ total_revenue or 0 }}</div>
+      <p style="font-size: 0.8rem; color: var(--text-muted, #888)">
+        Admin Commission (20%) Deducted
+      </p>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Cash in Hand (Offline)</div>
+      <div class="stat-value cash-color">₹{{ cash_total or 0 }}</div>
+      <p style="font-size: 0.8rem; color: #ffcc00">This stays with you</p>
+    </div>
+
+    <div class="stat-card" style="border-color: #00ff88">
+      <div class="stat-label">Online Wallet (With Admin)</div>
+      <div class="stat-value online-color">₹{{ online_total or 0 }}</div>
+      <p style="font-size: 0.8rem; color: #00ff88">Settlement at 8:30 PM</p>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <div class="panel">
+      <h2 style="
+            font-family: 'Orbitron';
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: white;
+          ">
+        MY PARKING APPLICATIONS
+      </h2>
+      <table width="100%" style="text-align: left; border-collapse: collapse; color: white">
+        <thead style="
+              color: var(--primary, #00f2ff);
+              border-bottom: 1px solid #333;
+            ">
+          <tr>
+            <th style="padding: 10px">Location Name</th>
+            <th>Type</th>
+            <th>Capacity</th>
+            <th>Submit Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr style="border-bottom: 1px solid #222">
+            <td style="padding: 10px; font-weight: bold">
+              {{ app.location_name }}
+            </td>
+            <td>{{ app.type | upper }}</td>
+            <td>{{ app.capacity }}</td>
+            <td style="color: var(--text-muted)">
+              {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else
+              'N/A' }}
+            </td>
+            <td>
+              <span
+                class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
+                {{ app.status | upper }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %} {% if not applications %}
+          <tr>
+            <td colspan="5" style="
+                  text-align: center;
+                  color: var(--text-muted);
+                  padding: 20px;
+                ">
+              You haven't submitted any parking lands yet.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <h2 style="
+          font-family: 'Orbitron';
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+          color: var(--primary, #00f2ff);
+          border-left: 3px solid #ff0055;
+          padding-left: 10px;
+        ">
+      LIVE SLOT STATUS (GROUPED BY LOCATION)
+    </h2>
+    <div class="table-container" style="
+          overflow-x: hidden;
+          background: rgba(20, 20, 20, 0.8);
+          border-radius: 8px;
+          border: 1px solid #333;
+        ">
+      <table style="
+            white-space: normal;
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+          ">
+        <thead style="
+              background: rgba(0, 242, 255, 0.05);
+              color: var(--primary);
+              font-family: 'Orbitron', sans-serif;
+              font-size: 0.8rem;
+              letter-spacing: 1px;
+            ">
+          <tr>
+            <th style="
+                  padding: 15px 20px;
+                  text-align: left;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                ">
+              Location Name
+            </th>
+            <th style="
+                  padding: 15px 20px;
+                  text-align: left;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                ">
+              Vehicle Type
+            </th>
+            <th style="
+                  padding: 15px 20px;
+                  text-align: left;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                ">
+              Availability
+            </th>
+          </tr>
+        </thead>
+        {% for group in grouped_slots %}
+        <tbody>
+          <tr class="group-row" style="
+                cursor: pointer;
+                background: rgba(0, 242, 255, 0.05);
+                transition: background 0.3s;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+              " onmouseover="this.style.background = 'rgba(0, 242, 255, 0.1)'"
+            onmouseout="this.style.background = 'rgba(0, 242, 255, 0.05)'"
+            onclick="toggleSlotRow('partner-slots-{{ loop.index }}')">
+            <td style="
+                  padding: 15px 20px;
+                  font-family: 'Orbitron', sans-serif;
+                  font-weight: bold;
+                  font-size: 1.1rem;
+                  color: var(--primary);
+                ">
+              ▼ {{ group.location_name }}
+            </td>
+            <td style="padding: 15px 20px">{{ group.type | upper }}</td>
+            <td style="padding: 15px 20px">
+              <span
+                style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; {{ 'background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid var(--primary);' if group.available != 0 else 'background: rgba(255, 0, 85, 0.1); color: #ff0055; border: 1px solid #ff0055;' }}">
+                {{ group.available }} / {{ group.total }} FREE
+              </span>
+            </td>
+          </tr>
+        </tbody>
+        <tbody id="partner-slots-{{ loop.index }}" style="display: none; background: rgba(10, 10, 15, 0.95)">
+          <tr>
+            <td colspan="3" style="
+                  padding: 20px;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                ">
+              <div style="
+                    display: flex;
+                    gap: 20px;
+                    flex-wrap: wrap;
+                    margin-bottom: 20px;
+                  ">
+                <div style="flex: 1; min-width: 300px">
+                  <h4 style="
+                        color: var(--primary);
+                        margin-top: 0;
+                        font-family: 'Orbitron';
+                        font-size: 1.1rem;
+                        border-bottom: 1px solid #333;
+                        padding-bottom: 10px;
+                      ">
+                    PARKING LOCATION INFO
+                  </h4>
+                  <p>
+                    <strong style="color: #888">Full Address:</strong>
+                    <span style="color: white">{{ group.full_address }}</span>
+                  </p>
+                  <p>
+                    <strong style="color: #888">Vehicle Type:</strong>
+                    <span style="color: white">{{ group.type | upper }}</span>
+                  </p>
+                  <p>
+                    <strong style="color: #888">Total Capacity:</strong>
+                    <span style="
+                          color: var(--primary);
+                          font-size: 1.2rem;
+                          font-weight: bold;
+                        ">{{ group.total }} Slots</span>
+                  </p>
+                </div>
+              </div>
+
+              <h4 style="
+                    color: var(--primary);
+                    margin-top: 20px;
+                    font-family: 'Orbitron';
+                    font-size: 1.1rem;
+                    border-bottom: 1px solid #333;
+                    padding-bottom: 10px;
+                  ">
+                INDIVIDUAL SLOTS
+              </h4>
+              <table style="width: 100%; border: none; border-collapse: collapse">
+                <thead style="background: transparent">
+                  <tr>
+                    <th style="
+                          padding: 10px 10px 10px 40px;
+                          color: #888;
+                          text-align: left;
+                          font-family: 'Orbitron';
+                          font-size: 0.8rem;
+                          border-bottom: 1px solid #333;
+                        ">
+                      Slot ID
+                    </th>
+                    <th style="
+                          padding: 10px;
+                          color: #888;
+                          text-align: left;
+                          font-family: 'Orbitron';
+                          font-size: 0.8rem;
+                          border-bottom: 1px solid #333;
+                        ">
+                      Status
+                    </th>
+                    <th style="
+                          padding: 10px;
+                          color: #888;
+                          text-align: left;
+                          font-family: 'Orbitron';
+                          font-size: 0.8rem;
+                          border-bottom: 1px solid #333;
+                        ">
+                      Current Booking Info
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for slot in group.slots %}
+                  {% if slot.is_occupied %}
+                  {% set slot_style = "background: rgba(255, 0, 85, 0.1); color: #ff0055; border: 1px solid #ff0055;" %}
+                  {% else %}
+                  {% set slot_style = "background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid
+                  var(--primary);" %}
+                  {% endif %}
+                  <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.02)">
+                    <td style="padding: 15px 10px 15px 40px; color: white">
+                      #{{ slot.id }}
+                    </td>
+                    <td style="padding: 15px 10px">
+                      <span
+                        style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; {{ slot_style }}">
+                        {{ 'OCCUPIED' if slot.is_occupied else 'AVAILABLE' }}
+                      </span>
+                    </td>
+                    <td style="padding: 15px 10px">
+                      {% set active_booking = bookings | selectattr("slot_id",
+                      "equalto", slot.id) | selectattr("status", "equalto",
+                      "active") | list %} {% if active_booking %} {% set
+                      current = active_booking[0] %} {% set b_user = users |
+                      selectattr("id", "equalto", current.user_id) | list |
+                      first %}
+                      <span style="color: var(--primary)">User:</span> {{
+                      b_user.name if b_user else 'Unknown' }}
+                      <span style="color: #666">|</span>
+                      <span style="color: var(--primary)">Vehicle ID:</span>
+                      {{ current.vehicle_id }} {% else %}
+                      <span style="color: #444">- - -</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+        {% endfor %} {% if not grouped_slots %}
+        <tbody>
+          <tr>
+            <td colspan="3" style="
+                  text-align: center;
+                  color: var(--text-muted);
+                  padding: 40px;
+                ">
+              No parking slots created yet.
+            </td>
+          </tr>
+        </tbody>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <div class="panel">
+      <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          ">
+        <h2 style="
+              font-family: 'Orbitron';
+              font-size: 1.1rem;
+              margin: 0;
+              color: #ffcc00;
+            ">
+          INCOMING ARRIVALS (PENDING)
+        </h2>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-arrivals" class="cyber-search"
+            onkeyup="filterTable('search-arrivals', 'table-arrivals')" placeholder="Search by Vehicle ID..." />
+        </div>
+      </div>
+      <table width="100%" style="text-align: left; border-collapse: collapse; color: white" id="table-arrivals">
+        <thead style="
+              color: var(--primary, #00f2ff);
+              border-bottom: 1px solid #333;
+            ">
+          <tr>
+            <th style="padding: 10px">Vehicle ID</th>
+            <th>Type</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set ns = namespace(has_pending=false) %} {% for b in bookings %}
+          {% if b.status == 'pending' %} {% set ns.has_pending = true %}
+          <tr style="
+                border-bottom: 1px solid #222;
+                background: rgba(255, 204, 0, 0.05);
+              ">
+            <td style="padding: 10px; font-weight: bold">
+              #{{ b.vehicle_id }}
+            </td>
+            <td>{{ (b.service_type or 'N/A') | upper }}</td>
+            <td>{{ (b.payment_mode or 'N/A') | upper }}</td>
+            <td style="color: #ffcc00">WAITING</td>
+            <td>
+              <button onclick="confirmArrival('{{ b.id }}')" style="
+                    background: rgba(0, 255, 136, 0.1);
+                    color: #00ff88;
+                    border: 1px solid #00ff88;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-family: 'Rajdhani';
+                  ">
+                ✅ CONFIRM
+              </button>
+            </td>
+          </tr>
+          {% endif %} {% endfor %} {% if not ns.has_pending %}
+          <tr>
+            <td colspan="5" style="
+                  text-align: center;
+                  color: var(--text-muted, #888);
+                  padding: 20px;
+                ">
+              No incoming vehicles currently.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <div class="panel">
+      <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          ">
+        <h2 style="
+              font-family: 'Orbitron';
+              font-size: 1.1rem;
+              margin: 0;
+              color: #ff0055;
+            ">
+          PENDING OFFLINE PAYMENTS
+        </h2>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-payments" class="cyber-search"
+            onkeyup="filterTable('search-payments', 'table-payments')" placeholder="Search by Vehicle ID..." />
+        </div>
+      </div>
+      <table width="100%" style="text-align: left; border-collapse: collapse; color: white" id="table-payments">
+        <thead style="color: #ff0055; border-bottom: 1px solid #333">
+          <tr>
+            <th style="padding: 10px">Vehicle ID</th>
+            <th>Amount Due</th>
+            <th>Type</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set ns2 = namespace(has_offline=false) %} {% for b in bookings %}
+          {% if b.status == 'offline_pending' %} {% set ns2.has_offline = true
+          %}
+          <tr style="
+                border-bottom: 1px solid #222;
+                background: rgba(255, 0, 85, 0.05);
+              ">
+            <td style="padding: 10px; font-weight: bold">
+              #{{ b.vehicle_id }}
+            </td>
+            <td style="color: #ffcc00; font-weight: bold; font-size: 1.2rem">
+              ₹{{ b.total_price }}
+            </td>
+            <td>{{ (b.payment_mode or 'CASH') | upper }}</td>
+            <td>
+              <button onclick="confirmOfflinePayment('{{ b.id }}')" style="
+                    background: rgba(0, 255, 136, 0.1);
+                    color: #00ff88;
+                    border: 1px solid #00ff88;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-family: 'Rajdhani';
+                  ">
+                ✅ PAYMENT RECEIVED
+              </button>
+            </td>
+          </tr>
+          {% endif %} {% endfor %} {% if not ns2.has_offline %}
+          <tr>
+            <td colspan="4" style="
+                  text-align: center;
+                  color: var(--text-muted, #888);
+                  padding: 20px;
+                ">
+              No customers waiting to pay.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <div class="panel">
+      <h2 style="
+            font-family: 'Orbitron';
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: white;
+          ">
+        TODAY'S BOOKING LOGS
+      </h2>
+      <table width="100%" style="text-align: left; border-collapse: collapse; color: white">
+        <thead style="
+              color: var(--primary, #00f2ff);
+              border-bottom: 1px solid #333;
+            ">
+          <tr>
+            <th style="padding: 10px">Vehicle ID</th>
+            <th>Type</th>
+            <th>Mode</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr style="border-bottom: 1px solid #222">
+            <td style="padding: 10px">#{{ b.vehicle_id }}</td>
+            <td>{{ (b.service_type or 'N/A') | upper }}</td>
+            <td class="{{ 'cash-color' if b.payment_mode == 'cash' else 'online-color' }}">
+              {{ (b.payment_mode or 'N/A') | upper }}
+            </td>
+            <td>₹{{ b.total_price or 0 }}</td>
+            <td>{{ (b.status or 'N/A') | upper }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function toggleSlotRow(rowId) {
+      let el = document.getElementById(rowId);
+      if (el.style.display === "none") {
+        el.style.display = "table-row-group";
+      } else {
+        el.style.display = "none";
+      }
+    }
+
+    function filterTable(inputId, tableId) {
+      let input = document.getElementById(inputId);
+      let filter = input.value.toUpperCase();
+      let table = document.getElementById(tableId);
+      let tr = table.getElementsByTagName("tr");
+      for (let i = 1; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName("td")[0]; // searching the first column (Vehicle ID)
+        if (td) {
+          let txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    }
+
+    async function confirmOfflinePayment(id) {
+      if (
+        !confirm(
+          "Confirm you have received the cash payment from the customer?",
+        )
+      )
+        return;
+      try {
+        let res = await fetch(`/api/confirm_offline_payment/${id}`, {
+          method: "POST",
+        });
+        let data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert("Action failed!");
+        }
+      } catch (e) {
+        alert("Connection error.");
+      }
+    }
+
+    async function confirmArrival(id) {
+      if (!confirm("Confirm customer has arrived and parked?")) return;
+      try {
+        let res = await fetch(`/api/confirm_arrival/${id}`, {
+          method: "POST",
+        });
+        let data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert("Action failed: " + data.message);
+        }
+      } catch (e) {
+        alert("Connection error.");
+      }
+    }
+
+    let pMap;
+    let selectedPMarker;
+
+    function openParkingModal() {
+      document.getElementById("add-parking-modal").classList.add("active");
+
+      if (!pMap) {
+        setTimeout(() => {
+          pMap = L.map("partner-map").setView([20.011, 73.7903], 14); // Default Nashik
+
+          L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+            {
+              attribution: "© OpenStreetMap contributors",
+              subdomains: "abcd",
+              maxZoom: 19,
+            },
+          ).addTo(pMap);
+
+          pMap.on("click", async function (e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            document.getElementById("form-lat").value = lat;
+            document.getElementById("form-lng").value = lng;
+
+            document.getElementById("coord-status").innerHTML =
+              `<span style="color: #00ff88;">Selected: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span> <span style="font-size: 0.7rem;">(Fetching address...)</span>`;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("submit-btn").style.background =
+              "rgba(0, 242, 255, 0.2)";
+
+            focusMapOn(lat, lng);
+
+            try {
+              let res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+              );
+              let data = await res.json();
+              if (data && data.display_name) {
+                document.getElementById("location-name-input").value =
+                  data.display_name;
+                document.getElementById("coord-status").innerHTML =
+                  `<span style="color: #00ff88;">Selected: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span>`;
+              }
+            } catch (err) {
+              console.error("Reverse geocoding failed", err);
+            }
+          });
+        }, 100);
+      } else {
+        // Fix grey-box map bug when modal is reopened
+        setTimeout(() => { pMap.invalidateSize(); }, 100);
+      }
+    }
+
+    async function searchLocation() {
+      let query = document.getElementById("location-name-input").value;
+      if (!query) return;
+
+      document.getElementById("coord-status").innerHTML =
+        `<span style="color: var(--text-muted);">Searching map for address...</span>`;
+
+      try {
+        let res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
+        );
+        let data = await res.json();
+
+        if (data && data.length > 0) {
+          let lat = parseFloat(data[0].lat);
+          let lng = parseFloat(data[0].lon);
+
+          document.getElementById("form-lat").value = lat;
+          document.getElementById("form-lng").value = lng;
+
+          document.getElementById("coord-status").innerHTML =
+            `<span style="color: #00ff88;">Found: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span>`;
+          document.getElementById("submit-btn").disabled = false;
+          document.getElementById("submit-btn").style.background =
+            "rgba(0, 242, 255, 0.2)";
+
+          focusMapOn(lat, lng);
+        } else {
+          document.getElementById("coord-status").innerHTML =
+            `<span style="color: #ff0055;">Address not found on map.</span>`;
+        }
+      } catch (err) {
+        console.error("Geocoding failed", err);
+        document.getElementById("coord-status").innerHTML =
+          `<span style="color: #ff0055;">Search error.</span>`;
+      }
+    }
+
+    function focusMapOn(lat, lng) {
+      if (selectedPMarker) {
+        pMap.removeLayer(selectedPMarker);
+      }
+      selectedPMarker = L.marker([lat, lng]).addTo(pMap);
+      pMap.setView([lat, lng], 16);
+    }
+
+    function closeParkingModal() {
+      document.getElementById("add-parking-modal").classList.remove("active");
+    }
+  </script>
+
+  <script>
+    function toggleDropdown() {
+      document.getElementById("profileDropdown").classList.toggle("active");
+    }
+    window.addEventListener("click", (event) => {
+      if (!event.target.matches(".profile-circle")) {
+        document.querySelectorAll(".dropdown-menu.active").forEach((menu) => {
+          menu.classList.remove("active");
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

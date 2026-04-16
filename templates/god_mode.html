@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOD MODE | SUPREME CONTROL</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        body {
+            padding: 0;
+        }
+
+        .god-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            padding: 30px; 
+        }
+
+        .card { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--primary); 
+            padding: 30px; 
+            border-radius: 12px; 
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .status-active { color: #00ff88; font-weight: bold; letter-spacing: 1px;}
+        .status-blocked { color: #ff0055; font-weight: bold; letter-spacing: 1px;}
+        
+        .btn-block { 
+            background: rgba(255, 0, 85, 0.1); 
+            color: var(--accent); 
+            border: 1px solid var(--accent); 
+            padding: 8px 15px; 
+            text-decoration: none;
+            cursor: pointer; 
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+        
+        .btn-block:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+        }
+
+        .btn-verify { 
+            background: rgba(0, 242, 255, 0.1); 
+            color: var(--primary); 
+            border: 1px solid var(--primary); 
+            padding: 8px 15px; 
+            cursor: pointer; 
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+
+        .btn-verify:hover {
+            background: var(--primary);
+            color: black;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+        }
+
+        .settlement-box { 
+            background: rgba(0, 242, 255, 0.05); 
+            border: 1px dashed var(--primary); 
+            padding: 20px; 
+            margin-top: 20px; 
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif;
+            padding-bottom: 15px;
+        }
+
+        td {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<header style="padding: 20px 30px; border-bottom: 1px solid rgba(0, 242, 255, 0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5);">
+    <h1 style="color: var(--primary); font-family: 'Orbitron'; margin: 0; letter-spacing: 2px;">GOD MODE ACCESS</h1>
+    <div class="stats" style="display: flex; align-items: center; gap: 20px;">
+        <span style="font-size: 1.2rem;">LIVE REVENUE: <b style="color: #00ff88; font-family: 'Orbitron';">₹{{ revenue }}</b></span>
+        <div class="profile-dropdown" style="margin-left: 20px;">
+            <div class="profile-circle" onclick="toggleDropdown()">
+                {{ session.get('name', 'Admin')[0] | upper }}
+            </div>
+            <div class="dropdown-menu" id="profileDropdown">
+                <div class="dropdown-header">
+                    <strong>{{ session.get('name', 'Admin') }}</strong>
+                    <small>System God</small>
+                </div>
+                <hr>
+                <a href="/my_info">👤 My Info</a>
+                <a href="/admin">🔙 Back to Admin</a>
+                <a href="/logout" class="dropdown-logout">🚪 Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="god-grid">
+    <div class="card">
+        <h2>PARTNER VERIFICATION & CONTROL</h2>
+        <table width="100%" style="text-align: left; margin-top: 20px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Partner Name</th>
+                    <th>Docs</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p_detail in partners %}
+                {% set p = users | selectattr("id", "equalto", p_detail.user_id) | list | first %}
+                <tr>
+                    <td>
+                        <b style="color: white;">{{ p.name if p else 'Unknown' }}</b> <br> 
+                        <small style="color: var(--text-muted);">{{ p.phone if p else 'N/A' }}</small>
+                    </td>
+                    <td>
+                        <button class="btn-verify" onclick="alert('Aadhar: {{ p_detail.aadhar_no }}\nPAN: {{ p_detail.pan_no }}')">VIEW INFO</button>
+                    </td>
+                    <td>
+                        <span class="{{ 'status-active' if p.is_active else 'status-blocked' }}">
+                            {{ 'ACTIVE' if p.is_active else 'BLOCKED' }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="/god/toggle-block/{{ p.id }}" class="btn-block">
+                            {{ 'BLOCK' if p.is_active else 'UNBLOCK' }}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>AUTO-SETTLEMENT (NIGHTLY 8:30)</h2>
+        <div id="settlement-results">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Click below to simulate 8:30 PM Settlement process.</p>
+            
+            <button class="login-btn" onclick="runSettlement()">
+                <span>RUN SETTLEMENT NOW</span>
+                <div class="btn-bg"></div>
+            </button>
+        </div>
+        <div id="report-area" class="settlement-box" style="display:none;">
+            <ul id="report-list" style="list-style-type: none; padding: 0; margin: 0; line-height: 1.8;"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function runSettlement() {
+        const res = await fetch('/api/daily-settlement');
+        const data = await res.json();
+        const list = document.getElementById('report-list');
+        list.innerHTML = "";
+        
+        data.forEach(item => {
+            list.innerHTML += `<li><span style="color: white;">${item.partner}:</span> <b style="color: #00ff88;">₹${item.transfer}</b> scheduled for transfer.</li>`;
+        });
+        
+        document.getElementById('report-area').style.display = 'block';
+    }
+</script>
+
+<script>
+    function toggleDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('active');
+    }
+    window.addEventListener('click', function(event) {
+        if (!event.target.matches('.profile-circle')) {
+            var dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('active')) {
+                    openDropdown.classList.remove('active');
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

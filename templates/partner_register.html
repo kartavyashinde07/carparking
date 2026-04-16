@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Onboarding | NASHIK PARKING</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 60%);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper visible" style="position: relative; top: 0; left: 0; transform: none;"> 
+        <div class="login-box" style="width: 450px;">
+            <div class="login-header">
+                <h2>PARTNER REGISTRATION</h2>
+                <p style="font-size: 0.8rem; color: var(--primary); text-align: center; margin-top: -5px; margin-bottom: 15px; letter-spacing: 1px;">NASHIK HYPER-LOCAL NETWORK</p>
+                <div class="line"></div>
+            </div>
+
+            {% if error %}
+            <div class="error-msg">
+                ERROR: {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/register-partner" method="POST" enctype="multipart/form-data">
+                
+                <div class="input-group">
+                    <input type="text" id="name" name="name" required autocomplete="off">
+                    <label for="name">FULL NAME (OWNER)</label>
+                    <div class="bar"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="email" id="email" name="email" required autocomplete="off">
+                    <label for="email">EMAIL (PARTNER ID)</label>
+                    <div class="bar"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="aadhar" name="aadhar" maxlength="12" required autocomplete="off">
+                    <label for="aadhar">AADHAR CARD NUMBER</label>
+                    <div class="bar"></div>
+                </div>
+
+                <div class="input-row" style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <input type="text" id="pan" name="pan" maxlength="10" required autocomplete="off">
+                        <label for="pan">PAN NUMBER</label>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <input type="text" id="phone" name="phone" required autocomplete="off">
+                        <label for="phone">CONTACT NO.</label>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="color: var(--primary); font-size: 0.8rem; display: block; margin-bottom: 8px;">
+                        UPLOAD PROPERTY TAX RECEIPT / RENT AGREEMENT (PDF/IMG)
+                    </label>
+                    <input type="file" name="legal_doc" style="background: rgba(255,255,255,0.02); border: 1px dashed #444; padding: 10px; width: 100%; color: #888; box-sizing: border-box; border-radius: 4px;">
+                </div>
+
+                <div class="input-group" style="position: relative;">
+                    <input type="password" id="password" name="password" required>
+                    <label for="password">SET PASSWORD</label>
+                    <div class="bar"></div>
+                    
+                    <span onclick="togglePassword()"
+                          style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color: var(--primary);">
+                        👁
+                    </span>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>SUBMIT FOR VERIFICATION</span>
+                    <div class="btn-bg"></div>
+                </button>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="/" style="color: #888; text-decoration: none; font-size: 0.9rem; transition: 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#888'">← Back to Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pass = document.getElementById("password");
+            pass.type = pass.type === "password" ? "text" : "password";
+        }
+    </script>
+
+</body>
+</html>
