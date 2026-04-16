@@ -831,76 +831,61 @@
         }
 
         // ── Geolocation bootstrap ─────────────────────────────────
-        // GPS configs: highAcc tries fast native GPS (3 s); lowAcc falls back
-        // to cell/Wi-Fi (5 s). A 60-second cache means instant re-loads.
-        const highAcc = { enableHighAccuracy: true,  timeout: 3000, maximumAge: 60000 };
-        const lowAcc  = { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 };
-
-        // STEP 1: Always render the map immediately so it is never blank.
+       // ── Geolocation bootstrap ─────────────────────────────────
         if (document.getElementById('map')) {
             initMap(NASHIK[0], NASHIK[1]);
 
-            // ── Success handler (shared by both high- and low-accuracy attempts) ──
-            function onGeoSuccess(e) {
-                const userLatLng = L.latLng(e.coords.latitude, e.coords.longitude);
-
-                // 1. Add custom pulsing "You are here" marker
-                const youAreHereIcon = L.divIcon({
-                    html: '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>',
-                    className: '',   // suppress Leaflet's default white box
-                    iconSize:   [18, 18],
-                    iconAnchor: [9, 9]
-                });
-                L.marker(userLatLng, { icon: youAreHereIcon })
-                    .addTo(map)
-                    .bindPopup('<b>📍 You are here</b>')
-                    .openPopup();
-                showToast('📍 GPS location acquired.');
-
-                // 2. Find the single nearest parking slot from the hidden DOM list
-                const slotEls = Array.from(document.querySelectorAll('.slot-data-item'));
-                let nearestLatLng = null;
-                let minDist = Infinity;
-
-                slotEls.forEach(function(el) {
-                    const lat = parseFloat(el.dataset.lat);
-                    const lng = parseFloat(el.dataset.lng);
-                    if (isNaN(lat) || isNaN(lng)) return;
-                    const slotLatLng = L.latLng(lat, lng);
-                    const dist = map.distance(userLatLng, slotLatLng);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        nearestLatLng = slotLatLng;
-                    }
-                });
-
-                // 3. Smart zoom: fit user + nearest slot if within 8 km, else zoom to user
-                if (nearestLatLng && minDist < 8000) {
-                    const bounds = L.latLngBounds(userLatLng, nearestLatLng);
-                    map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
-                } else {
-                    map.flyTo(userLatLng, 15);
-                }
-            }
-
-            // ── Final error handler: both attempts failed ──
-            function onGeoErrorFinal(err) {
-                console.error('Geolocation final error:', err.message);
-                alert('⚠️ Please enable GPS and allow location permissions for this site to see your accurate position.');
-            }
-
-            // ── High-accuracy error handler: immediately try low-accuracy fallback ──
-            function onGeoErrorHigh(err) {
-                console.warn('High-accuracy GPS timed out or failed, trying cell/Wi-Fi fallback:', err.message);
-                navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorFinal, lowAcc);
-            }
-
-            // STEP 2: Fire high-accuracy request (3 s timeout).
-            // On failure, onGeoErrorHigh retries with low-accuracy (5 s timeout).
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorHigh, highAcc);
+                // Bhau, 3s evaji 10s thevlay, jyamule to fail honar nahi.
+                const geoOptions = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+
+                function onGeoSuccess(position) {
+                    const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+
+                    // 1. Lal color cha marker
+                    const iconHtml = `<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>`;
+                    const youAreHereIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+                    L.marker(userLatLng, { icon: youAreHereIcon }).addTo(map).bindPopup('<b>📍 You are here</b>').openPopup();
+
+                    // 2. Sagyat javalchi parking shodh
+                    let nearestLatLng = null;
+                    let minDist = Infinity;
+                    document.querySelectorAll('.slot-data-item').forEach(function(el) {
+                        const lat = parseFloat(el.dataset.lat);
+                        const lng = parseFloat(el.dataset.lng);
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            const slotLatLng = L.latLng(lat, lng);
+                            const dist = map.distance(userLatLng, slotLatLng);
+                            if (dist < minDist) { minDist = dist; nearestLatLng = slotLatLng; }
+                        }
+                    });
+
+                    // 3. Smart Zoom (8km chi condition)
+                    if (nearestLatLng && minDist < 8000) {
+                        map.flyToBounds(L.latLngBounds(userLatLng, nearestLatLng), { padding: [50, 50], maxZoom: 16 });
+                    } else {
+                        map.flyTo(userLatLng, 15);
+                    }
+                    showToast('📍 Exact GPS location acquired!');
+                }
+
+                function onGeoError(err) {
+                    console.warn("High Acc Error: ", err.message);
+                    if (err.code === 1) {
+                        alert("⚠️ Location Permission Blocked! Krupaya browser chya settings madhe 'Allow' kara.");
+                    } else {
+                        // High accuracy fail zali tar Mobile Tower (Low Acc) try kara
+                        navigator.geolocation.getCurrentPosition(onGeoSuccess, function(errFallback) {
+                            console.error("Fallback Error: ", errFallback.message);
+                            alert("⚠️ Mobile cha GPS/Location ON ahe ka nakki check kara. Signal bhetat nahiye.");
+                        }, { enableHighAccuracy: false, timeout: 10000 });
+                    }
+                }
+
+                // Start GPS Request
+                navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError, geoOptions);
             } else {
-                console.warn('Geolocation API not supported by this browser.');
+                console.warn("Browser does not support GPS.");
             }
         }
 
