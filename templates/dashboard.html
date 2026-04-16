@@ -735,10 +735,12 @@
         // ══════════════════════════════════════════════════════════
         // MAP INITIALIZATION  —  Geolocation + Parking Slots
         // ══════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════
+        // MAP INITIALIZATION  —  Geolocation + Parking Slots
+        // ══════════════════════════════════════════════════════════
         const NASHIK = [20.0059, 73.7903]; // fallback
         let map;
 
-        // ── Toast helper ──────────────────────────────────────────
         function showToast(msg, durationMs = 4000) {
             let toast = document.getElementById('loc-toast');
             if (!toast) {
@@ -751,7 +753,6 @@
             setTimeout(() => toast.classList.remove('show'), durationMs);
         }
 
-        // ── Parking slot plotting (shared by both success & fallback) ──
         function plotParkingSlots() {
             const rawSlots = Array.from(document.querySelectorAll('.slot-data-item')).map(el => ({
                 lat: parseFloat(el.dataset.lat),
@@ -760,7 +761,6 @@
                 occupied: el.dataset.occupied === 'true'
             }));
 
-            // Group individual slots by physical location
             const lotsMap = {};
             rawSlots.forEach(s => {
                 const key = s.lat.toFixed(5) + '_' + s.lng.toFixed(5);
@@ -787,8 +787,9 @@
 
                 marker.on('click', () => {
                     window.selectedLotName = lot.name;
-                    window.selectedLotLat  = lot.lat;
-                    window.selectedLotLng  = lot.lng;
+                    window.selectedLotLat = lot.lat; // REQUIRED FOR NAV
+                    window.selectedLotLng = lot.lng; // REQUIRED FOR NAV
+
                     document.getElementById('selected-slot-id').innerText =
                         lot.name + ' (' + lot.available + ' free)';
                     document.getElementById('parking-modal').classList.remove('hidden');
@@ -796,32 +797,14 @@
                     const gmapsBtn = document.getElementById('gmaps-btn');
                     if (gmapsBtn) {
                         gmapsBtn.onclick = () => {
-                            window.open(
-                                `https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`,
-                                '_blank'
-                            );
+                            // ✅ FIXED: Official Google Maps Directions Link
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
                         };
                     }
                 });
             });
         }
 
-        // ── "You Are Here" pulsing marker ─────────────────────────
-        function addYouAreHereMarker(lat, lng) {
-            const iconHtml = `<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>`;
-            const youAreHereIcon = L.divIcon({
-                html: iconHtml,
-                className: '',   // suppress Leaflet default white box
-                iconSize: [18, 18],
-                iconAnchor: [9, 9]
-            });
-            L.marker([lat, lng], { icon: youAreHereIcon })
-                .addTo(map)
-                .bindPopup('<b>📍 You are here</b>')
-                .openPopup();
-        }
-
-        // ── Map factory ───────────────────────────────────────────
         function initMap(lat, lng) {
             map = L.map('map', { tap: false }).setView([lat, lng], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -829,32 +812,32 @@
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
-            plotParkingSlots();
 
-            // ── 🎯 "Locate Me" failsafe button (top-right) ──────────
+            // 🎯 NEW: LOCATE ME BUTTON
+            // ── 🎯 "Locate Me" Google Maps Style (bottom-right) ──────────
+            // ── 🎯 "Find Location" Control (bottom-right) ──────────
+            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
+            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
+           // ── 🎯 "Find Location" Control (Working Logic + Bottom Right UI) ──────────
             const LocateControl = L.Control.extend({
-                options: { position: 'topright' },
+                options: { position: 'bottomright' },
                 onAdd: function () {
-                    const btn = L.DomUtil.create('button', '');
-                    btn.title = 'Locate Me';
+                    const wrapper = L.DomUtil.create('div');
+                    // Margin-bottom 20px mhanje ekdam khali disel
+                    wrapper.style.cssText = 'margin-bottom: 20px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
+
+                    // 1. Text Box (FIND LOCATION)
+                    const label = L.DomUtil.create('div', '', wrapper);
+                    label.innerHTML = 'FIND LOCATION';
+                    label.style.cssText = 'background: rgba(0, 0, 0, 0.85); color: #00f2ff; font-size: 10px; padding: 5px 10px; border-radius: 6px; border: 1px solid #00f2ff; font-family: "Orbitron", sans-serif; white-space: nowrap; font-weight: bold; box-shadow: 0 4px 10px rgba(0,242,255,0.2); pointer-events: none; letter-spacing: 1px;';
+
+                    // 2. 🎯 Circular Button
+                    const btn = L.DomUtil.create('button', '', wrapper);
+                    btn.title = 'Find Location';
                     btn.innerHTML = '🎯';
-                    btn.style.cssText = [
-                        'background:#1e1e1e',
-                        'color:#00f2ff',
-                        'border:1px solid #00f2ff',
-                        'border-radius:6px',
-                        'width:36px',
-                        'height:36px',
-                        'font-size:18px',
-                        'cursor:pointer',
-                        'display:flex',
-                        'align-items:center',
-                        'justify-content:center',
-                        'min-height:unset',
-                        'padding:0',
-                        'box-shadow:0 1px 5px rgba(0,0,0,0.5)'
-                    ].join(';');
-                    L.DomEvent.disableClickPropagation(btn);
+                    btn.style.cssText = 'background: #1e1e1e; color: #00f2ff; border: 2px solid #00f2ff; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: unset; padding: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.6); transition: 0.2s;';
+                    
+                    L.DomEvent.disableClickPropagation(wrapper);
                     L.DomEvent.on(btn, 'click', function (e) {
                         if (e) e.preventDefault();
                         showToast('📍 Fetching exact GPS...');
@@ -890,130 +873,97 @@
                             }
                         );
                     });
-                    return btn;
+                    return wrapper;
                 }
             });
             new LocateControl().addTo(map);
+
+            plotParkingSlots();
         }
 
-        // ── Geolocation bootstrap ─────────────────────────────────
         if (document.getElementById('map')) {
             initMap(NASHIK[0], NASHIK[1]);
 
-            // ── Shared success handler ───────────────────────────────
-            function onGeoSuccess(position) {
-                const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
-
-                // Pulsing "You are here" marker
-                const iconHtml = `<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>`;
-                const youAreHereIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-                L.marker(userLatLng, { icon: youAreHereIcon }).addTo(map)
-                    .bindPopup('<b>📍 You are here</b>').openPopup();
-
-                // Find nearest parking lot
-                let nearestLatLng = null;
-                let minDist = Infinity;
-                document.querySelectorAll('.slot-data-item').forEach(function (el) {
-                    const lat = parseFloat(el.dataset.lat);
-                    const lng = parseFloat(el.dataset.lng);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        const slotLatLng = L.latLng(lat, lng);
-                        const dist = map.distance(userLatLng, slotLatLng);
-                        if (dist < minDist) { minDist = dist; nearestLatLng = slotLatLng; }
-                    }
-                });
-
-                // Smart zoom: fit user + nearest lot if within 8 km
-                if (nearestLatLng && minDist < 8000) {
-                    map.flyToBounds(L.latLngBounds(userLatLng, nearestLatLng), { padding: [50, 50], maxZoom: 16 });
-                } else {
-                    map.flyTo(userLatLng, 15);
-                }
-                showToast('📍 GPS location acquired!');
-            }
-
-            // ── Final error handler (used by both bootstrap & Locate Me button) ──
-            function onGeoErrorFinal(err) {
-                console.error('Geolocation final error:', err.message);
-                if (err.code === 1) {
-                    alert('⚠️ Location permission blocked. Please allow location in browser settings.');
-                } else {
-                    alert('⚠️ GPS signal unavailable. Please enable Location Services and try again.');
-                }
-            }
-
-            // ── High-accuracy error → immediately fall back to low-accuracy ──
-            function onGeoErrorHigh(err) {
-                console.warn('High-accuracy GPS failed, trying network fallback:', err.message);
-                if (err.code === 1) {
-                    // Permission denied — no point retrying
-                    onGeoErrorFinal(err);
-                } else {
-                    navigator.geolocation.getCurrentPosition(
-                        onGeoSuccess,
-                        onGeoErrorFinal,
-                        { enableHighAccuracy: false, timeout: 10000 }
-                    );
-                }
-            }
-
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    onGeoSuccess,
-                    onGeoErrorHigh,
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    function (e) {
+                        const userLatLng = L.latLng(e.coords.latitude, e.coords.longitude);
+                        const youAreHereIcon = L.divIcon({
+                            html: '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>',
+                            className: '', iconSize: [18, 18], iconAnchor: [9, 9]
+                        });
+                        L.marker(userLatLng, { icon: youAreHereIcon }).addTo(map).bindPopup('<b>📍 You are here</b>').openPopup();
+
+                        const slotEls = Array.from(document.querySelectorAll('.slot-data-item'));
+                        let nearestLatLng = null; let minDist = Infinity;
+                        slotEls.forEach(function (el) {
+                            const lat = parseFloat(el.dataset.lat); const lng = parseFloat(el.dataset.lng);
+                            if (isNaN(lat) || isNaN(lng)) return;
+                            const slotLatLng = L.latLng(lat, lng);
+                            const dist = map.distance(userLatLng, slotLatLng);
+                            if (dist < minDist) { minDist = dist; nearestLatLng = slotLatLng; }
+                        });
+
+                        if (nearestLatLng && minDist < 8000) {
+                            map.flyToBounds(L.latLngBounds(userLatLng, nearestLatLng), { padding: [50, 50], maxZoom: 16 });
+                        } else {
+                            map.flyTo(userLatLng, 15);
+                        }
+                    },
+                    function (err) {
+                        navigator.geolocation.getCurrentPosition(
+                            function (e) { map.flyTo([e.coords.latitude, e.coords.longitude], 15); },
+                            function (err) { console.error('Fallback failed'); },
+                            { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+                        );
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
                 );
-            } else {
-                console.warn('Geolocation API not supported by this browser.');
             }
         }
 
-        // ✅ BOOK SLOT — Anti-spam + Auto-Navigation
+        // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam)
+        // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam & Mobile Popup Fix)
         async function initBooking(serviceType) {
-            // Step 1: Disable all booking buttons immediately to block double-clicks
-            const modalBtns = document.querySelectorAll('#parking-modal .payment-btn');
-            modalBtns.forEach(b => {
-                b.disabled = true;
-                b.innerText = '⏳ PROCESSING...';
+            const plate = document.getElementById("plate").value.trim();
+            const type = document.getElementById("type").value;
+
+            if (!plate) return alert("Vehicle plate is required.");
+
+            // 🛑 FREEZE BUTTONS
+            const buttons = document.querySelectorAll('#parking-modal .payment-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ PROCESSING...';
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
             });
 
-            const plate = document.getElementById('plate').value.trim();
-            const type  = document.getElementById('type').value;
-
-            if (!plate) {
-                modalBtns.forEach(b => { b.disabled = false; });
-                return alert('Vehicle plate is required.');
+            // 🚀 MOBILE POPUP BLOCKER FIX: Open blank tab IMMEDIATELY
+            let mapTab = null;
+            if (window.selectedLotLat && window.selectedLotLng) {
+                mapTab = window.open('about:blank', '_blank');
             }
 
-            if (serviceType === 'valet') {
-                alert('Valet assigned. Please wait for pickup.');
-            }
-
-            // Step 2: Call the backend
-            const res  = await fetch('/api/book', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    plate_number:  plate,
-                    vehicle_type:  type,
-                    service_type:  serviceType,
-                    location_name: window.selectedLotName
+                    plate_number: plate, vehicle_type: type, service_type: serviceType, location_name: window.selectedLotName
                 })
             });
             const data = await safeJson(res);
 
             if (data && data.success) {
-                // Step 3: Open Google Maps navigation automatically
-                const gmapUrl = 'https://www.google.com/maps/dir/?api=1&destination=' +
-                    window.selectedLotLat + ',' + window.selectedLotLng + '&travelmode=driving';
-                window.open(gmapUrl, '_blank');
-
-                // Step 4: Reload the page after a short delay
+                // 🗺️ AUTO NAVIGATION OPENING (Official Google Maps URL)
+                if (mapTab) {
+                    mapTab.location.href = `https://www.google.com/maps/dir/?api=1&destination=${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
+                }
                 setTimeout(() => window.location.reload(), 1500);
             } else {
-                // Re-enable buttons so the user can correct and retry
-                modalBtns.forEach(b => { b.disabled = false; });
-                alert('ERROR: ' + (data ? data.message : 'Failed'));
+                if (mapTab) mapTab.close();
+                alert("ERROR: " + (data ? data.message : "Failed"));
+                window.location.reload();
             }
         }
 
