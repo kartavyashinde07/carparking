@@ -1,175 +1,186 @@
-/* --- BASE VARIABLES & SETUP --- */
+/* ============================================================
+   GOOGLE FONTS
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap');
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
 :root {
-    --primary: #00f2ff;
-    --accent: #ff0055;
-    --bg: #050505;
-    --text-main: #ffffff;
-    --text-muted: #888888;
-    --panel-bg: rgba(10, 10, 10, 0.85);
+    /* Backgrounds */
+    --bg:           #0a0a0a;
+    --surface:      #1e1e1e;
+    --surface-2:    #242424;
+    --surface-3:    #2a2a2a;
+    --panel-bg:     #1e1e1e;
+
+    /* Accent */
+    --primary:      #00d4e8;
+    --primary-dark: #009db0;
+    --accent:       #ff2d6b;
+
+    /* Text */
+    --text-main:    #ffffff;
+    --text-muted:   #a0a0a0;
+    --text-dim:     #555555;
+
+    /* Borders */
+    --border:       #333333;
+    --border-focus: #00d4e8;
+
+    /* Radius */
+    --radius:       12px;
+    --radius-sm:    8px;
+
+    /* Shadow */
+    --shadow:       0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-md:    0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    margin: 0;
-    padding: 0;
     background-color: var(--bg);
     color: var(--text-main);
-    font-family: 'Rajdhani', sans-serif;
-}
-
-body.index-scroll-body {
-    height: 500vh; 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    /* No background gradients or sci-fi images globally */
 }
 
-.scroll-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
+/* ============================================================
+   INDEX PAGE — STATIC HERO
+   ============================================================ */
+body.index-body {
     height: 100vh;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: fixed;
+    inset: 0;
+    background-image: url('/static/assets/car_sequence/0192.jpg');
+    background-size: cover;
+    background-position: center;
     z-index: 0;
-    pointer-events: none; 
 }
 
-#hero-lightpass {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* PERFORMANCE UPGRADE: Force Hardware (GPU) Acceleration */
-    transform: translateZ(0);
-    will-change: transform;
-}
-
-/* --- HERO TEXT (SCROLL TO PARK) --- */
-.hero-text {
+.hero-overlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    text-align: center;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 3rem;
-    color: var(--primary);
-    text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
-    pointer-events: none;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 1;
 }
 
-/* --- SCROLL INDICATOR (BOTTOM) --- */
-.scroll-indicator {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    text-align: center;
-    transition: opacity 0.5s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    color: #888;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.8rem;
-    letter-spacing: 2px;
-}
-
-/* --- CUSTOM SCROLLBAR & CAR THUMB --- */
-.custom-scrollbar-track {
-    position: fixed;
-    top: 0;
-    right: 20px;
-    width: 2px;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: 50;
-}
-
-.car-thumb {
-    position: absolute;
-    left: -12px; 
-    top: 0;
-    font-size: 1.5rem;
-    transition: top 0.1s linear;
-}
-
-/* --- LOGIN WRAPPER & BOX --- */
+/* ============================================================
+   LOGIN WRAPPER & BOX
+   ============================================================ */
 .login-wrapper {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
-    /* Hidden by default until scrolled to bottom */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none; 
-    transition: opacity 0.6s ease, visibility 0.6s;
-}
-
-.login-wrapper.visible {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 0 16px;
 }
 
 .login-box {
-    background: var(--panel-bg);
-    border: 1px solid rgba(0, 242, 255, 0.2);
-    backdrop-filter: blur(10px);
+    background: rgba(18, 18, 18, 0.95);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     padding: 40px;
-    width: 350px;
-    border-radius: 12px;
-    box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    width: 100%;
 }
 
 .login-header h2 {
     font-family: 'Orbitron', sans-serif;
     color: var(--primary);
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     text-align: center;
+    font-size: 1.2rem;
     letter-spacing: 2px;
+    /* No text-shadow glow */
 }
 
 .login-header .line {
     height: 2px;
-    width: 60px;
+    width: 48px;
     background: var(--accent);
-    margin: 0 auto 30px auto;
+    margin: 0 auto 28px auto;
+    border-radius: 2px;
 }
 
-/* --- FORM INPUTS (FLOATING LABELS) --- */
+/* ============================================================
+   FLOATING LABEL INPUTS (login page)
+   ============================================================ */
 .input-group {
     position: relative;
-    margin-bottom: 35px;
+    margin-bottom: 32px;
 }
 
-.input-group input {
+/* Override global input rule — keep login fields as underline-only */
+.login-box .input-group input,
+.login-box .input-group input:focus {
     width: 100%;
-    padding: 10px 0;
-    font-size: 1.1rem;
-    color: #fff;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #555;
+    padding: 14px 0 10px 0;
+    font-size: 1rem;
+    color: var(--text-main);
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    border-radius: 0 !important;
     outline: none;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+    min-height: unset !important;
+    box-shadow: none !important;
+    margin: 0 !important;
 }
 
+.login-box .input-group input:focus {
+    border-bottom-color: var(--primary) !important;
+}
+
+/* Label sits vertically centred inside the field when idle */
 .input-group label {
     position: absolute;
-    top: 10px;
+    top: 50%;
     left: 0;
-    font-size: 1rem;
-    color: #888;
+    transform: translateY(-50%);
+    font-size: 0.88rem;
+    color: var(--text-muted);
     pointer-events: none;
-    transition: 0.3s ease all;
+    transition: top 0.22s ease, font-size 0.22s ease, color 0.22s ease, transform 0.22s ease;
+    letter-spacing: 0.5px;
 }
 
+/* Label floats above the line when focused or filled */
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
-    top: -20px;
-    font-size: 0.8rem;
+    top: 0;
+    transform: translateY(-130%);
+    font-size: 0.72rem;
     color: var(--primary);
     letter-spacing: 1px;
 }
@@ -182,7 +193,7 @@ body.index-scroll-body {
     display: block;
 }
 
-.input-group .bar:before {
+.input-group .bar::before {
     content: '';
     height: 2px;
     width: 0;
@@ -190,29 +201,50 @@ body.index-scroll-body {
     bottom: 0;
     left: 0;
     background: var(--primary);
-    transition: 0.3s ease all;
+    transition: width 0.22s ease;
 }
 
-.input-group input:focus ~ .bar:before {
+.input-group input:focus ~ .bar::before {
     width: 100%;
 }
 
-/* --- SUBMIT BUTTON --- */
+#toggle-pw {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1rem;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+#toggle-pw:hover {
+    color: var(--primary);
+}
+
+/* ============================================================
+   LOGIN SUBMIT BUTTON
+   ============================================================ */
 .login-btn {
     width: 100%;
-    padding: 15px;
-    background: transparent;
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 2px;
+    min-height: 50px;
+    padding: 14px;
+    background: var(--primary);
+    border: none;
+    color: #000;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: color 0.3s ease;
-    margin-top: 10px;
-    border-radius: 4px;
+    margin-top: 8px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s, transform 0.15s;
 }
 
 .login-btn span {
@@ -220,108 +252,422 @@ body.index-scroll-body {
     z-index: 2;
 }
 
+/* Remove the old sliding .btn-bg — solid fill is cleaner */
 .login-btn .btn-bg {
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--primary);
-    z-index: 1;
-    transition: left 0.3s ease;
+    display: none;
 }
 
 .login-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
     color: #000;
 }
 
-.login-btn:hover .btn-bg {
-    left: 0;
+.login-btn:active {
+    transform: translateY(0);
 }
 
-/* --- ERROR MESSAGES --- */
+/* ============================================================
+   AUTH LINKS  (register / partner)
+   ============================================================ */
+.auth-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.auth-links a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.auth-links a:hover {
+    opacity: 0.8;
+}
+
+.auth-links a.partner-link {
+    color: #ffcc00;
+}
+
+.auth-sep {
+    color: var(--text-dim);
+}
+
+/* ============================================================
+   ERROR MESSAGES
+   ============================================================ */
 .error-msg {
-    margin-top: 20px;
+    margin-top: 16px;
     color: var(--accent);
     text-align: center;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
+    font-size: 0.82rem;
     border: 1px solid var(--accent);
-    padding: 10px;
-    background: rgba(255, 0, 85, 0.1);
-    border-radius: 4px;
+    padding: 12px;
+    background: rgba(255, 45, 107, 0.07);
+    border-radius: var(--radius-sm);
 }
 
-/* --- PREMIUM UI COMPONENTS --- */
+/* ============================================================
+   PANEL / CARD  (shared across dashboards)
+   ============================================================ */
+.panel {
+    background: var(--surface);
+    padding: 22px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+/* ── Section titles ── */
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.82rem;
+    color: var(--primary);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    /* No neon text-shadow */
+}
+
+/* ── Section header (heading + search bar stacked) ── */
+.section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+/* ============================================================
+   DATA CARDS  (replaces <table> rows)
+   ============================================================ */
+.data-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.data-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+}
+
+.data-card:hover {
+    border-color: #444;
+}
+
+.data-card .dc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.data-card .dc-label {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-card .dc-value {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    font-weight: 500;
+    text-align: right;
+}
+
+.data-card .dc-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.data-card .dc-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Left-border tints for status cards */
+.data-card.card-pending {
+    border-left: 3px solid #ffcc00;
+}
+
+.data-card.card-offline {
+    border-left: 3px solid var(--accent);
+}
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-bar {
+    width: 100%;
+    padding: 11px 16px;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    min-height: 48px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-bar:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(0, 212, 232, 0.12);
+}
+
+.search-bar::placeholder {
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   UNIVERSAL FORM INPUTS & SELECTS  (dashboard / modals)
+   ============================================================ */
+input:not([type="hidden"]):not([type="file"]),
+select,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 6px 0 16px 0;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    min-height: 48px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    /* No glowing border by default */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(0, 212, 232, 0.12);
+    background: var(--surface-2);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+}
+
+select option {
+    background: var(--surface);
+    color: var(--text-main);
+}
+
+input[type="file"] {
+    padding: 10px 14px;
+    min-height: 44px;
+}
+
+input[type="file"]::file-selector-button {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    margin-right: 12px;
+    transition: background 0.2s;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: var(--surface-3);
+}
+
+/* form-group label (modal forms) */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   BUTTONS  (solid fills — no glowing borders)
+   ============================================================ */
+button {
+    min-height: 48px;
+    padding: 11px 18px;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.15s;
+    width: 100%;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Primary — solid cyan fill */
+.btn-primary {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    /* No box-shadow glow */
+}
+
+.btn-primary:disabled {
+    background: var(--surface-3);
+    color: var(--text-dim);
+    cursor: not-allowed;
+}
+
+/* Success — solid green fill */
+.btn-success {
+    background: #00c96e;
+    color: #000;
+    border: none;
+}
+
+.btn-success:hover {
+    background: #00a85c;
+}
+
+/* Danger — solid red fill */
+.btn-danger,
+.end-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: auto;
+    padding: 8px 16px;
+    min-height: 40px;
+    font-size: 0.8rem;
+}
+
+.btn-danger:hover,
+.end-btn:hover {
+    background: #cc1f55;
+}
+
+/* ============================================================
+   MODAL OVERLAY & CONTENT
+   ============================================================ */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 1000;
     display: none;
     justify-content: center;
     align-items: center;
+    padding: 16px;
 }
 
 .modal-overlay.active {
     display: flex;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .modal-content {
-    background: rgba(10, 10, 15, 0.7);
+    background: var(--surface);
     width: 900px;
-    max-width: 95%;
-    padding: 35px;
-    border-radius: 16px;
-    border: 1px solid rgba(0, 242, 255, 0.3);
-    box-shadow: 0 10px 40px rgba(0, 242, 255, 0.15), inset 0 0 20px rgba(0, 242, 255, 0.05);
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
     display: flex;
-    gap: 30px;
+    gap: 24px;
     position: relative;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: popIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    /* No neon outline box-shadow */
 }
 
 @keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
 }
 
 .close-btn {
     position: absolute;
-    top: 15px;
-    right: 20px;
+    top: 14px;
+    right: 18px;
     background: transparent;
     color: var(--text-muted);
     border: none;
-    font-size: 2rem;
+    font-size: 1.8rem;
     cursor: pointer;
-    transition: 0.3s ease;
+    line-height: 1;
+    min-height: unset;
+    width: auto;
+    padding: 4px 8px;
+    transition: color 0.2s;
 }
 
 .close-btn:hover {
-    color: var(--accent);
-    transform: rotate(90deg);
+    color: var(--text-main);
 }
 
 .modal-body {
     display: flex;
     width: 100%;
-    gap: 30px;
+    gap: 24px;
 }
 
-@media (max-width: 768px) {
-    .modal-body {
-        flex-direction: column;
-    }
-}
-
-.form-section, .map-section {
+.form-section,
+.map-section {
     flex: 1;
 }
 
@@ -330,107 +676,267 @@ body.index-scroll-body {
     flex-direction: column;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--primary);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #fff;
-    border-radius: 6px;
-    font-family: 'Rajdhani', sans-serif;
+/* Payment modal screens */
+.payment-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 15px;
+    margin: 8px 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Inter', sans-serif;
     font-size: 1rem;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
+    width: 100%;
+    display: block;
+    min-height: 52px;
 }
 
-.form-group input[type="file"] {
-    padding: 8px;
+.payment-btn:hover {
+    background: var(--surface-3);
 }
 
-.form-group input[type="file"]::file-selector-button {
-    background: rgba(0, 242, 255, 0.1);
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: 'Orbitron', sans-serif;
-    transition: 0.3s;
-    margin-right: 15px;
+.receipt-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-top: 20px;
+    text-align: left;
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 1rem;
+    border-radius: var(--radius-sm);
 }
 
-.form-group input[type="file"]::file-selector-button:hover {
-    background: var(--primary);
-    color: #000;
-}
-
-.form-group input:focus, .form-group select:focus {
-    border-color: var(--primary);
-    background: rgba(0, 242, 255, 0.05);
-    outline: none;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-}
-
-.form-group select option {
-    background: #111;
-    color: #fff;
-    font-family: 'Rajdhani', sans-serif;
-    padding: 10px;
-}
-
-.btn-primary {
-    background: rgba(0, 242, 255, 0.1);
-    color: var(--primary);
-    border: 1px solid var(--primary);
-    padding: 12px 20px;
-    font-family: 'Orbitron', sans-serif;
-    cursor: pointer;
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+.badge {
+    padding: 3px 10px;
     border-radius: 6px;
-    transition: 0.3s;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 2px;
+    font-family: 'Inter', sans-serif;
     display: inline-block;
 }
 
-#submit-btn {
-    width: 100%;
-    margin-top: 20px;
+.badge-active {
+    background: rgba(0, 201, 110, 0.15);
+    color: #00c96e;
+    border: 1px solid #00c96e;
 }
 
-.btn-primary:hover:not(:disabled) {
-    background: var(--primary);
-    color: black;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+.badge-occupied {
+    background: rgba(255, 45, 107, 0.12);
+    color: var(--accent);
+    border: 1px solid var(--accent);
 }
 
-.btn-primary:disabled {
-    border-color: #444;
-    color: #666;
-    background: rgba(255,255,255,0.05);
-    cursor: not-allowed;
+.badge-completed {
+    background: rgba(255, 204, 0, 0.1);
+    color: #ffcc00;
+    border: 1px solid #ffcc00;
 }
 
-/* Beautiful custom UI for partner modal inputs specifically */
+/* Status badges used on booking items */
+.status-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+.status-badge.active {
+    background: rgba(0, 201, 110, 0.12);
+    color: #00c96e;
+    border: 1px solid #00c96e;
+}
+
+.status-badge.pending {
+    background: rgba(255, 204, 0, 0.1);
+    color: #ffcc00;
+    border: 1px solid #ffcc00;
+}
+
+.status-badge.completed {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    border: 1px solid var(--text-dim);
+}
+
+.status-badge.offline_pending {
+    background: rgba(255, 45, 107, 0.1);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+#map,
 #partner-map {
-    border: 1px solid rgba(0, 242, 255, 0.4) !important;
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+    width: 100%;
+    height: clamp(280px, 50vh, 420px);
+    border-radius: var(--radius);
+    z-index: 0;
+    touch-action: pan-x pan-y;
+    border: 1px solid var(--border);
+    /* No neon box-shadow */
 }
 
-/* --- PREMIUM PROFILE DROPDOWN --- */
+/* ============================================================
+   PULSING "YOU ARE HERE" MARKER
+   ============================================================ */
+@keyframes pulse-ring {
+    0%   { transform: scale(1);   opacity: 0.8; }
+    70%  { transform: scale(2.4); opacity: 0;   }
+    100% { transform: scale(1);   opacity: 0;   }
+}
+
+.you-are-here-icon {
+    position: relative;
+    width: 18px;
+    height: 18px;
+}
+
+.you-are-here-icon .dot {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.you-are-here-icon .ring {
+    position: absolute;
+    inset: -4px;
+    background: rgba(255, 45, 107, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 1.6s ease-out infinite;
+}
+
+/* ============================================================
+   LOCATION TOAST
+   ============================================================ */
+#loc-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 12px 22px;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+}
+
+#loc-toast.show {
+    opacity: 1;
+}
+
+/* ============================================================
+   PARTNER REVENUE STAT GRID
+   ============================================================ */
+.partner-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    padding: 0 20px 20px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+    /* No neon border or glow */
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 10px 0 4px;
+    /* No text-shadow glow */
+}
+
+.cash-color   { color: #ffcc00 !important; }
+.online-color { color: #00c96e !important; }
+
+/* ============================================================
+   LIVE INDICATOR
+   ============================================================ */
+.live-indicator {
+    height: 9px;
+    width: 9px;
+    background: #00c96e;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1;    }
+    50%       { opacity: 0.2; }
+}
+
+/* ============================================================
+   SLOT BOXES
+   ============================================================ */
+.slot-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.slot-box {
+    padding: 14px;
+    text-align: center;
+    border-radius: var(--radius-sm);
+    transition: transform 0.18s;
+    box-shadow: var(--shadow);
+}
+
+.slot-box:hover { transform: translateY(-2px); }
+
+.occupied {
+    border: 1px solid rgba(255, 45, 107, 0.4);
+    background: rgba(255, 45, 107, 0.07);
+}
+
+.vacant {
+    border: 1px solid rgba(0, 212, 232, 0.3);
+    background: rgba(0, 212, 232, 0.05);
+}
+
+/* ============================================================
+   PROFILE DROPDOWN
+   ============================================================ */
 .profile-dropdown {
     position: relative;
     display: inline-block;
@@ -441,45 +947,40 @@ body.index-scroll-body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary) 0%, #0055ff 100%);
-    color: #fff;
+    background: var(--primary);
+    color: #000;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
     cursor: pointer;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+    transition: background 0.2s, transform 0.18s;
     user-select: none;
-    border: 2px solid transparent;
+    /* No glowing box-shadow */
 }
 
 .profile-circle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
-    border: 2px solid #fff;
+    background: var(--primary-dark);
+    transform: scale(1.06);
 }
 
 .dropdown-menu {
     position: absolute;
     top: 130%;
     right: 0;
-    width: 250px;
-    background: rgba(15, 15, 15, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 242, 255, 0.2);
-    border-radius: 12px;
-    padding: 10px 0;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 242, 255, 0.1);
-    
-    /* Animation defaults */
+    width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 0;
+    box-shadow: var(--shadow-md);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px) scale(0.95);
+    transform: translateY(-8px) scale(0.97);
     transform-origin: top right;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s ease;
 }
 
 .dropdown-menu.active {
@@ -489,57 +990,50 @@ body.index-scroll-body {
 }
 
 .dropdown-header {
-    padding: 15px 20px;
-    text-align: left;
+    padding: 14px 18px;
 }
 
 .dropdown-header strong {
     display: block;
-    color: var(--primary);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 .dropdown-header small {
     display: block;
     color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-top: 3px;
+    font-size: 0.75rem;
+    margin-top: 2px;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .dropdown-menu hr {
     border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 5px 0 10px 0;
+    border-top: 1px solid var(--border);
+    margin: 4px 0 8px 0;
 }
 
 .dropdown-menu a {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    color: #fff !important;
+    padding: 11px 18px;
+    color: var(--text-main) !important;
     text-decoration: none;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.1rem;
-    transition: background 0.2s, padding-left 0.2s, color 0.2s;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s;
     border: none !important;
     margin: 0 !important;
     border-radius: 0 !important;
 }
 
-.dropdown-menu a.admin-link {
-    display: flex !important;
-    margin: 0 !important;
-    padding: 12px 20px !important;
-}
-
 .dropdown-menu a:hover {
-    background: rgba(0, 242, 255, 0.1);
-    padding-left: 25px !important;
-    color: var(--primary) !important;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main) !important;
 }
 
 .dropdown-logout {
@@ -547,35 +1041,156 @@ body.index-scroll-body {
 }
 
 .dropdown-logout:hover {
-    background: rgba(255, 0, 85, 0.1) !important;
-    color: #ff3377 !important;
+    background: rgba(255, 45, 107, 0.07) !important;
 }
 
-/* --- STATUS BADGES --- */
-.badge {
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.78rem;
-    font-weight: bold;
-    letter-spacing: 1px;
-    font-family: 'Orbitron', sans-serif;
+/* ============================================================
+   BOOKING ITEMS  (customer dashboard)
+   ============================================================ */
+.booking-item {
+    background: var(--surface-2);
+    padding: 15px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    transition: background 0.18s;
+}
+
+.booking-item.active    { border-left-color: var(--primary); background: rgba(0, 212, 232, 0.04); }
+.booking-item.pending   { border-left-color: #ffcc00;        background: rgba(255, 204, 0, 0.04);  }
+.booking-item.offline_pending { border-left-color: var(--accent); background: rgba(255, 45, 107, 0.04); }
+.booking-item.completed { opacity: 0.65; }
+
+.booking-info b {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.booking-info small {
+    display: block;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-size: 0.85rem;
+}
+
+.price {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-top: 4px;
     display: inline-block;
 }
 
-.badge-active {
-    background: rgba(0, 255, 136, 0.1);
-    color: #00ff88;
-    border: 1px solid #00ff88;
+/* ============================================================
+   LEAFLET — hide routing container
+   ============================================================ */
+.leaflet-routing-container {
+    display: none !important;
 }
 
-.badge-occupied {
-    background: rgba(255, 0, 85, 0.1);
-    color: #ff0055;
-    border: 1px solid #ff0055;
-}
+/* ============================================================
+   MOBILE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
 
-.badge-completed {
-    background: rgba(255, 204, 0, 0.1);
-    color: #ffcc00;
-    border: 1px solid #ffcc00;
-}
+    body {
+        overflow-x: hidden;
+        font-size: 14px;
+    }
+
+    /* Index: allow vertical scroll if card is taller than viewport */
+    body.index-body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .login-wrapper {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 0 auto;
+        padding: 20px 16px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    .login-box {
+        padding: 28px 18px;
+    }
+
+    /* Full-width stacked form */
+    form { display: flex; flex-direction: column; gap: 6px; }
+    .input-group { width: 100%; margin-bottom: 28px; }
+    .input-group input { min-height: 48px; }
+    .login-btn { width: 100%; min-height: 50px; }
+
+    .auth-links { flex-direction: column; gap: 10px; text-align: center; }
+    .auth-sep   { display: none; }
+
+    /* Partner grid stacks */
+    .partner-grid { grid-template-columns: 1fr; padding: 16px; }
+
+    /* Section header stacks */
+    .section-header { flex-direction: column; gap: 10px; }
+    .search-bar     { width: 100%; }
+
+    /* Data cards — full-width actions */
+    .data-card .dc-actions button,
+    .data-card .dc-actions a {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    /* Modals stack vertically */
+    .modal-body    { flex-direction: column; }
+    .modal-content { flex-direction: column; padding: 20px 16px; gap: 14px; }
+
+    /* Universal inputs */
+    input:not([type="hidden"]):not([type="file"]),
+    select,
+    textarea { min-height: 50px; }
+
+    button { min-height: 50px; }
+
+    /* Booking item stacks */
+    .booking-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .booking-item > div { width: 100%; }
+
+    .booking-item > div:last-child {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .booking-item > div:last-child > a,
+    .booking-item > div:last-child > button,
+    .booking-item > .end-btn {
+        width: 100%;
+        margin: 0;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    /* Map height on mobile */
+    #map,
+    #partner-map {
+        height: 50vmax;
+        max-height: 340px;
+    }
+
+    /* Dropdown fills most of screen width */
+    .dropdown-menu { width: 88vw; }
+}

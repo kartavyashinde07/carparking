@@ -7,7 +7,7 @@
     <title>User Dashboard | LUXURY PARKING</title>
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -25,12 +25,13 @@
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: 'Rajdhani', sans-serif;
+            background-color: #121212;
+            color: #f0f0f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 30px;
-            background-image: radial-gradient(circle at 50% 0%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 212, 232, 0.04) 0%, transparent 50%);
+            overflow-x: hidden;
         }
 
         /* --- HEADER --- */
@@ -45,10 +46,10 @@
 
         h1 {
             font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
+            color: #00d4e8;
             margin: 0;
-            letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+            letter-spacing: 1.5px;
+            font-size: 1.3rem;
         }
 
         .header-links a {
@@ -112,12 +113,12 @@
         }
 
         .panel {
-            background: var(--panel);
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            background: #1e1e1e;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
         h2 {
@@ -135,16 +136,17 @@
         input,
         select {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0 20px 0;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #444;
+            padding: 12px 14px;
+            margin: 8px 0 18px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
             color: #fff;
-            border-radius: 4px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            min-height: 48px;
             box-sizing: border-box;
-            transition: 0.3s ease;
+            transition: 0.2s ease;
             outline: none;
         }
 
@@ -157,15 +159,17 @@
         button {
             width: 100%;
             background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
+            color: #00d4e8;
+            border: 1px solid #00d4e8;
             padding: 12px;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
             cursor: pointer;
-            border-radius: 4px;
-            transition: 0.3s ease;
+            border-radius: 8px;
+            min-height: 48px;
+            transition: 0.2s ease;
         }
 
         button:hover {
@@ -376,6 +380,82 @@
         .leaflet-routing-container {
             display: none !important;
         }
+
+        /* ── MAP: mobile-responsive ── */
+        #map {
+            width: 100%;
+            height: clamp(280px, 50vh, 420px);
+            border-radius: 10px;
+            z-index: 0;
+            /* Touch scroll must not be blocked on mobile */
+            touch-action: pan-x pan-y;
+        }
+
+        /* ── YOU-ARE-HERE pulsing ring ── */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            70% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        .you-are-here-icon {
+            position: relative;
+            width: 18px;
+            height: 18px;
+        }
+
+        .you-are-here-icon .dot {
+            position: absolute;
+            inset: 0;
+            background: #ff0055;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 6px rgba(255, 0, 85, 0.6);
+        }
+
+        .you-are-here-icon .ring {
+            position: absolute;
+            inset: -4px;
+            background: rgba(255, 0, 85, 0.35);
+            border-radius: 50%;
+            animation: pulse-ring 1.6s ease-out infinite;
+        }
+
+        /* ── Location toast ── */
+        #loc-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.92);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            white-space: nowrap;
+        }
+
+        #loc-toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -410,7 +490,7 @@
         <div>
             <div class="panel" style="padding: 10px;">
                 <h2 style="padding-left: 15px; padding-top: 10px;">NEARBY PARKING (LIVE MAP)</h2>
-                <div id="map" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+                <div id="map"></div>
             </div>
 
             <div class="panel stat-box">
@@ -454,31 +534,32 @@
                 {% endif %}
                 {% endfor %}
 
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        {% if ns.lat and ns.lng %}
-                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
-                            target="_blank" class="payment-btn"
-                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                            START NAVIGATION</a>
-                        {% else %}
-                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
-                            target="_blank" class="payment-btn"
-                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                            START NAVIGATION (BY NAME)</a>
-                        {% endif %}
-                        <div style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                            ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
-                        </div>
-                        <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')">✖ CANCEL</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    {% if ns.lat and ns.lng %}
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
+                        target="_blank" class="payment-btn"
+                        style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                        START NAVIGATION</a>
+                    {% else %}
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
+                        target="_blank" class="payment-btn"
+                        style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                        START NAVIGATION (BY NAME)</a>
+                    {% endif %}
+                    <div
+                        style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
                     </div>
+                    <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')">✖ CANCEL</button>
+                </div>
 
-                    <script>
-                        window.pendingBookingTimers = window.pendingBookingTimers || [];
-                        window.pendingBookingTimers.push({
-                            id: "{{ booking.id }}",
-                            remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
-                        });
-                    </script>
+                <script>
+                    window.pendingBookingTimers = window.pendingBookingTimers || [];
+                    window.pendingBookingTimers.push({
+                        id: "{{ booking.id }}",
+                        remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
+                    });
+                </script>
                 {% endif %}
 
                 {% if booking.status == 'active' %}
@@ -605,10 +686,13 @@
     <div id="custom-confirm-modal" class="modal-overlay hidden">
         <div class="modal-content panel" style="width: 400px; padding: 30px;">
             <h3 style="color: var(--accent); margin-top: 0; font-size: 1.5rem;">⚠️ REQUIRED CONFIRMATION</h3>
-            <p id="confirm-message" style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 25px;">Are you sure?</p>
+            <p id="confirm-message" style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 25px;">Are you
+                sure?</p>
             <div style="display: flex; gap: 15px;">
-                <button id="confirm-yes-btn" class="payment-btn" style="border-color: var(--accent); color: var(--accent); margin: 0; width: 50%; font-weight: bold;">PROCEED</button>
-                <button id="confirm-no-btn" class="payment-btn" style="border-color: #555; color: #888; margin: 0; width: 50%;">CANCEL</button>
+                <button id="confirm-yes-btn" class="payment-btn"
+                    style="border-color: var(--accent); color: var(--accent); margin: 0; width: 50%; font-weight: bold;">PROCEED</button>
+                <button id="confirm-no-btn" class="payment-btn"
+                    style="border-color: #555; color: #888; margin: 0; width: 50%;">CANCEL</button>
             </div>
         </div>
     </div>
@@ -648,17 +732,27 @@
             }
         }
 
-        // ✅ MAP INITIALIZATION
+        // ══════════════════════════════════════════════════════════
+        // MAP INITIALIZATION  —  Geolocation + Parking Slots
+        // ══════════════════════════════════════════════════════════
+        const NASHIK = [20.0059, 73.7903]; // fallback
         let map;
-        if (document.getElementById('map')) {
-            map = L.map('map').setView([20.0110, 73.7903], 14); // Nashik Coordinates
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
 
-            // Dynamic Parking Lots from database via HTML attributes
+        // ── Toast helper ──────────────────────────────────────────
+        function showToast(msg, durationMs = 4000) {
+            let toast = document.getElementById('loc-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'loc-toast';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), durationMs);
+        }
+
+        // ── Parking slot plotting (shared by both success & fallback) ──
+        function plotParkingSlots() {
             const rawSlots = Array.from(document.querySelectorAll('.slot-data-item')).map(el => ({
                 lat: parseFloat(el.dataset.lat),
                 lng: parseFloat(el.dataset.lng),
@@ -666,45 +760,98 @@
                 occupied: el.dataset.occupied === 'true'
             }));
 
-            // Group by location
+            // Group individual slots by physical location
             const lotsMap = {};
-
             rawSlots.forEach(s => {
-                let key = s.lat.toFixed(5) + "_" + s.lng.toFixed(5);
+                const key = s.lat.toFixed(5) + '_' + s.lng.toFixed(5);
                 if (!lotsMap[key]) {
                     lotsMap[key] = { lat: s.lat, lng: s.lng, name: s.name, available: 0 };
                 }
-                if (!s.occupied) {
-                    lotsMap[key].available++;
-                }
+                if (!s.occupied) lotsMap[key].available++;
             });
 
-            const lots = Object.values(lotsMap);
-
-            lots.forEach((lot) => {
-                let marker = L.circleMarker([lot.lat, lot.lng], {
+            Object.values(lotsMap).forEach(lot => {
+                const marker = L.circleMarker([lot.lat, lot.lng], {
                     radius: 12,
-                    fillColor: "#00f2ff",
-                    color: "#fff",
+                    fillColor: lot.available > 0 ? '#00f2ff' : '#ff0055',
+                    color: '#fff',
                     weight: 2,
                     opacity: 1,
-                    fillOpacity: 0.8
+                    fillOpacity: 0.85
                 }).addTo(map);
+
+                marker.bindTooltip(
+                    `<b>${lot.name}</b><br>${lot.available} slot${lot.available !== 1 ? 's' : ''} free`,
+                    { className: 'leaflet-tooltip-dark', direction: 'top' }
+                );
 
                 marker.on('click', () => {
                     window.selectedLotName = lot.name;
-                    document.getElementById('selected-slot-id').innerText = lot.name + " (" + lot.available + " free)";
+                    document.getElementById('selected-slot-id').innerText =
+                        lot.name + ' (' + lot.available + ' free)';
                     document.getElementById('parking-modal').classList.remove('hidden');
 
                     const gmapsBtn = document.getElementById('gmaps-btn');
                     if (gmapsBtn) {
                         gmapsBtn.onclick = () => {
-                            const destinationUrl = `https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`;
-                            window.open(destinationUrl, '_blank');
+                            window.open(
+                                `https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`,
+                                '_blank'
+                            );
                         };
                     }
                 });
             });
+        }
+
+        // ── "You Are Here" pulsing marker ─────────────────────────
+        function addYouAreHereMarker(lat, lng) {
+            const iconHtml = `<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>`;
+            const youAreHereIcon = L.divIcon({
+                html: iconHtml,
+                className: '',   // suppress Leaflet default white box
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            });
+            L.marker([lat, lng], { icon: youAreHereIcon })
+                .addTo(map)
+                .bindPopup('<b>📍 You are here</b>')
+                .openPopup();
+        }
+
+        // ── Map factory ───────────────────────────────────────────
+        function initMap(lat, lng) {
+            map = L.map('map', { tap: false }).setView([lat, lng], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+            plotParkingSlots();
+        }
+
+        // ── Geolocation bootstrap ─────────────────────────────────
+        if (document.getElementById('map')) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // ✅ SUCCESS — center on real location
+                    function (pos) {
+                        const { latitude, longitude } = pos.coords;
+                        initMap(latitude, longitude);
+                        addYouAreHereMarker(latitude, longitude);
+                    },
+                    // ❌ DENIED / ERROR — fall back to Nashik
+                    function () {
+                        initMap(NASHIK[0], NASHIK[1]);
+                        showToast('📍 Location access denied. Showing default city center.');
+                    },
+                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                );
+            } else {
+                // Browser does not support geolocation
+                initMap(NASHIK[0], NASHIK[1]);
+                showToast('📍 Geolocation not supported. Showing default city center.');
+            }
         }
 
         // ✅ NEW BOOK SLOT LOGIC

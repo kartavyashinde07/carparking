@@ -6,172 +6,156 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Partner Console | N-PARK SUPREME</title>
   <link
-    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    /* --- THEME & LAYOUT --- */
-    .partner-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
+    /* Partner-console local overrides — global tokens live in style.css */
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #121212;
+      color: #f0f0f0;
     }
 
-    .stat-card {
-      background: var(--panel-bg, #111);
-      border: 1px solid rgba(0, 242, 255, 0.2);
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .stat-label {
-      color: var(--text-muted, #888);
-      font-size: 0.8rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .stat-value {
-      font-family: "Orbitron";
-      font-size: 2.2rem;
-      color: var(--primary, #00f2ff);
-      margin: 10px 0;
-    }
-
-    /* --- COLORS --- */
-    .cash-color {
-      color: #ffcc00 !important;
-    }
-
-    .online-color {
-      color: #00ff88 !important;
-    }
-
-    /* --- LIVE INDICATOR --- */
-    .live-indicator {
-      height: 10px;
-      width: 10px;
-      background: #00ff88;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 5px;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-
-      100% {
-        opacity: 1;
-      }
-    }
-
-    /* --- SLOT STYLING (FIXED VS CODE ERRORS) --- */
-    .slot-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 15px;
-    }
-
-    .slot-box {
-      padding: 15px;
-      text-align: center;
-      border-radius: 8px;
-      transition: 0.3s;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .slot-box:hover {
-      transform: translateY(-3px);
-    }
-
-    /* Classes instead of inline Jinja to stop VS Code errors */
-    .occupied {
-      border: 1px solid #ff0055;
-      background: rgba(255, 0, 85, 0.1);
-    }
-
-    .vacant {
-      border: 1px solid #00f2ff;
-      background: rgba(0, 242, 255, 0.05);
-    }
-
-    /* --- SEARCH UI REFINEMENT --- */
-    .search-wrapper {
-      position: relative;
-      display: inline-flex;
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(0, 212, 232, 0.15);
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    .cyber-search {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--primary, #00f2ff);
-      color: white;
-      padding: 8px 15px 8px 35px;
-      border-radius: 20px;
-      width: 250px;
-      font-family: "Rajdhani", sans-serif;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+    header h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--primary, #00d4e8);
+      font-size: 1.3rem;
+      margin: 0;
     }
 
-    .cyber-search:focus {
-      box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
-      width: 280px;
-      background: rgba(0, 30, 40, 0.8);
+    .availability-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
     }
 
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      color: var(--primary, #00f2ff);
-      font-size: 1.1rem;
-      pointer-events: none;
+    .avail-free {
+      background: rgba(0, 212, 232, 0.1);
+      color: #00d4e8;
+      border: 1px solid #00d4e8;
     }
 
-    .panel {
-      background: rgba(20, 20, 20, 0.8);
-      padding: 20px;
+    .avail-full {
+      background: rgba(255, 45, 107, 0.1);
+      color: #ff2d6b;
+      border: 1px solid #ff2d6b;
+    }
+
+    /* Slot groups toggle row */
+    .group-card {
+      background: rgba(0, 212, 232, 0.04);
+      border: 1px solid rgba(0, 212, 232, 0.15);
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .group-card:hover {
+      background: rgba(0, 212, 232, 0.08);
+    }
+
+    .group-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      color: var(--primary, #00d4e8);
+      font-weight: 700;
+    }
+
+    .group-detail {
+      display: none;
+      margin-top: 14px;
+    }
+
+    .group-detail.open {
+      display: block;
+    }
+
+    .slot-mini-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
       border-radius: 8px;
-      border: 1px solid #333;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.85rem;
+    }
+
+    /* Slot & group availability pill classes — replaces inline Jinja style */
+    .slot-available {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: rgba(0, 212, 232, 0.1);
+      color: #00d4e8;
+      border: 1px solid #00d4e8;
+    }
+
+    .slot-occupied {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: rgba(255, 45, 107, 0.1);
+      color: #ff2d6b;
+      border: 1px solid #ff2d6b;
+    }
+
+    .group-avail-free {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: rgba(0, 212, 232, 0.1);
+      color: #00d4e8;
+      border: 1px solid #00d4e8;
+    }
+
+    .group-avail-full {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: rgba(255, 45, 107, 0.1);
+      color: #ff2d6b;
+      border: 1px solid #ff2d6b;
     }
   </style>
 </head>
 
 <body>
-  <header style="
-        padding: 20px;
-        border-bottom: 1px solid rgba(0, 242, 255, 0.2);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      ">
-    <h1 style="
-          color: var(--primary, #00f2ff);
-          font-family: 'Orbitron';
-          font-size: 1.5rem;
-        ">
-      PARTNER CONSOLE
-    </h1>
-    <div>
-      <button class="btn-primary" style="margin-right: 20px; padding: 8px 15px" onclick="openParkingModal()">
+  <header>
+    <h1>PARTNER CONSOLE</h1>
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <button class="btn-primary" style="width:auto; padding:10px 18px; min-height:44px;" onclick="openParkingModal()">
         + SUBMIT NEW PARKING LAND
       </button>
-      <span style="margin-right: 20px; color: white"><span class="live-indicator"></span> LIVE</span>
-      <div class="profile-dropdown" style="margin-left: 20px">
+      <span style="color:#aaa; font-size:0.85rem;"><span class="live-indicator"></span> LIVE</span>
+      <div class="profile-dropdown">
         <div class="profile-circle" onclick="toggleDropdown()">
           {{ session.get('name', 'U')[0] | upper }}
         </div>
@@ -303,59 +287,38 @@
 
   <div style="padding: 20px">
     <div class="panel">
-      <h2 style="
-            font-family: 'Orbitron';
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: white;
-          ">
-        MY PARKING APPLICATIONS
-      </h2>
-      <table width="100%" style="text-align: left; border-collapse: collapse; color: white">
-        <thead style="
-              color: var(--primary, #00f2ff);
-              border-bottom: 1px solid #333;
-            ">
-          <tr>
-            <th style="padding: 10px">Location Name</th>
-            <th>Type</th>
-            <th>Capacity</th>
-            <th>Submit Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for app in applications %}
-          <tr style="border-bottom: 1px solid #222">
-            <td style="padding: 10px; font-weight: bold">
-              {{ app.location_name }}
-            </td>
-            <td>{{ app.type | upper }}</td>
-            <td>{{ app.capacity }}</td>
-            <td style="color: var(--text-muted)">
-              {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else
-              'N/A' }}
-            </td>
-            <td>
-              <span
-                class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
-                {{ app.status | upper }}
-              </span>
-            </td>
-          </tr>
-          {% endfor %} {% if not applications %}
-          <tr>
-            <td colspan="5" style="
-                  text-align: center;
-                  color: var(--text-muted);
-                  padding: 20px;
-                ">
-              You haven't submitted any parking lands yet.
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+      <h2 class="section-title">MY PARKING APPLICATIONS</h2>
+      <div class="data-card-list">
+        {% for app in applications %}
+        <div class="data-card">
+          <div class="dc-title">{{ app.location_name }}</div>
+          <div class="dc-row">
+            <span class="dc-label">Type</span>
+            <span class="dc-value">{{ app.type | upper }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Capacity</span>
+            <span class="dc-value">{{ app.capacity }} slots</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Submitted</span>
+            <span class="dc-value" style="color:#8a8a8a;">
+              {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else 'N/A' }}
+            </span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Status</span>
+            <span
+              class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
+              {{ app.status | upper }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not applications %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">You haven't submitted any parking lands yet.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 
@@ -434,8 +397,7 @@
             </td>
             <td style="padding: 15px 20px">{{ group.type | upper }}</td>
             <td style="padding: 15px 20px">
-              <span
-                style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; {{ 'background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid var(--primary);' if group.available != 0 else 'background: rgba(255, 0, 85, 0.1); color: #ff0055; border: 1px solid #ff0055;' }}">
+              <span class="{{ 'group-avail-free' if group.available != 0 else 'group-avail-full' }}">
                 {{ group.available }} / {{ group.total }} FREE
               </span>
             </td>
@@ -530,19 +492,12 @@
                 </thead>
                 <tbody>
                   {% for slot in group.slots %}
-                  {% if slot.is_occupied %}
-                  {% set slot_style = "background: rgba(255, 0, 85, 0.1); color: #ff0055; border: 1px solid #ff0055;" %}
-                  {% else %}
-                  {% set slot_style = "background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid
-                  var(--primary);" %}
-                  {% endif %}
                   <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.02)">
                     <td style="padding: 15px 10px 15px 40px; color: white">
                       #{{ slot.id }}
                     </td>
                     <td style="padding: 15px 10px">
-                      <span
-                        style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; {{ slot_style }}">
+                      <span class="{{ 'slot-occupied' if slot.is_occupied else 'slot-available' }}">
                         {{ 'OCCUPIED' if slot.is_occupied else 'AVAILABLE' }}
                       </span>
                     </td>
@@ -587,217 +542,140 @@
 
   <div style="padding: 20px">
     <div class="panel">
-      <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-          ">
-        <h2 style="
-              font-family: 'Orbitron';
-              font-size: 1.1rem;
-              margin: 0;
-              color: #ffcc00;
-            ">
-          INCOMING ARRIVALS (PENDING)
-        </h2>
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-arrivals" class="cyber-search"
-            onkeyup="filterTable('search-arrivals', 'table-arrivals')" placeholder="Search by Vehicle ID..." />
-        </div>
+      <div class="section-header">
+        <h2 class="section-title" style="color:#ffcc00; border-bottom-color:rgba(255,204,0,0.2);">INCOMING ARRIVALS
+          (PENDING)</h2>
+        <input type="text" id="search-arrivals" class="search-bar"
+          onkeyup="filterCards('search-arrivals', 'arrivals-list')" placeholder="🔍  Search by Vehicle ID..." />
       </div>
-      <table width="100%" style="text-align: left; border-collapse: collapse; color: white" id="table-arrivals">
-        <thead style="
-              color: var(--primary, #00f2ff);
-              border-bottom: 1px solid #333;
-            ">
-          <tr>
-            <th style="padding: 10px">Vehicle ID</th>
-            <th>Type</th>
-            <th>Service</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% set ns = namespace(has_pending=false) %} {% for b in bookings %}
-          {% if b.status == 'pending' %} {% set ns.has_pending = true %}
-          <tr style="
-                border-bottom: 1px solid #222;
-                background: rgba(255, 204, 0, 0.05);
-              ">
-            <td style="padding: 10px; font-weight: bold">
-              #{{ b.vehicle_id }}
-            </td>
-            <td>{{ (b.service_type or 'N/A') | upper }}</td>
-            <td>{{ (b.payment_mode or 'N/A') | upper }}</td>
-            <td style="color: #ffcc00">WAITING</td>
-            <td>
-              <button onclick="confirmArrival('{{ b.id }}')" style="
-                    background: rgba(0, 255, 136, 0.1);
-                    color: #00ff88;
-                    border: 1px solid #00ff88;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-family: 'Rajdhani';
-                  ">
-                ✅ CONFIRM
-              </button>
-            </td>
-          </tr>
-          {% endif %} {% endfor %} {% if not ns.has_pending %}
-          <tr>
-            <td colspan="5" style="
-                  text-align: center;
-                  color: var(--text-muted, #888);
-                  padding: 20px;
-                ">
-              No incoming vehicles currently.
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+      <div class="data-card-list" id="arrivals-list">
+        {% set ns = namespace(has_pending=false) %}
+        {% for b in bookings %}
+        {% if b.status == 'pending' %}
+        {% set ns.has_pending = true %}
+        <div class="data-card card-pending" data-search="{{ b.vehicle_id }}">
+          <div class="dc-title" style="color:#ffcc00;">Vehicle #{{ b.vehicle_id }}</div>
+          <div class="dc-row">
+            <span class="dc-label">Service</span>
+            <span class="dc-value">{{ (b.service_type or 'N/A') | upper }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Payment Mode</span>
+            <span class="dc-value">{{ (b.payment_mode or 'N/A') | upper }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Status</span>
+            <span class="dc-value" style="color:#ffcc00; font-weight:600;">WAITING</span>
+          </div>
+          <div class="dc-actions">
+            <button class="btn-success" onclick="confirmArrival('{{ b.id }}')">✅ CONFIRM ARRIVAL</button>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% if not ns.has_pending %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">No incoming vehicles currently.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 
   <div style="padding: 20px">
     <div class="panel">
-      <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-          ">
-        <h2 style="
-              font-family: 'Orbitron';
-              font-size: 1.1rem;
-              margin: 0;
-              color: #ff0055;
-            ">
-          PENDING OFFLINE PAYMENTS
-        </h2>
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-payments" class="cyber-search"
-            onkeyup="filterTable('search-payments', 'table-payments')" placeholder="Search by Vehicle ID..." />
-        </div>
+      <div class="section-header">
+        <h2 class="section-title" style="color:#ff2d6b; border-bottom-color:rgba(255,45,107,0.2);">PENDING OFFLINE
+          PAYMENTS</h2>
+        <input type="text" id="search-payments" class="search-bar"
+          onkeyup="filterCards('search-payments', 'payments-list')" placeholder="🔍  Search by Vehicle ID..." />
       </div>
-      <table width="100%" style="text-align: left; border-collapse: collapse; color: white" id="table-payments">
-        <thead style="color: #ff0055; border-bottom: 1px solid #333">
-          <tr>
-            <th style="padding: 10px">Vehicle ID</th>
-            <th>Amount Due</th>
-            <th>Type</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% set ns2 = namespace(has_offline=false) %} {% for b in bookings %}
-          {% if b.status == 'offline_pending' %} {% set ns2.has_offline = true
-          %}
-          <tr style="
-                border-bottom: 1px solid #222;
-                background: rgba(255, 0, 85, 0.05);
-              ">
-            <td style="padding: 10px; font-weight: bold">
-              #{{ b.vehicle_id }}
-            </td>
-            <td style="color: #ffcc00; font-weight: bold; font-size: 1.2rem">
-              ₹{{ b.total_price }}
-            </td>
-            <td>{{ (b.payment_mode or 'CASH') | upper }}</td>
-            <td>
-              <button onclick="confirmOfflinePayment('{{ b.id }}')" style="
-                    background: rgba(0, 255, 136, 0.1);
-                    color: #00ff88;
-                    border: 1px solid #00ff88;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-family: 'Rajdhani';
-                  ">
-                ✅ PAYMENT RECEIVED
-              </button>
-            </td>
-          </tr>
-          {% endif %} {% endfor %} {% if not ns2.has_offline %}
-          <tr>
-            <td colspan="4" style="
-                  text-align: center;
-                  color: var(--text-muted, #888);
-                  padding: 20px;
-                ">
-              No customers waiting to pay.
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+      <div class="data-card-list" id="payments-list">
+        {% set ns2 = namespace(has_offline=false) %}
+        {% for b in bookings %}
+        {% if b.status == 'offline_pending' %}
+        {% set ns2.has_offline = true %}
+        <div class="data-card card-offline" data-search="{{ b.vehicle_id }}">
+          <div class="dc-title">Vehicle #{{ b.vehicle_id }}</div>
+          <div class="dc-row">
+            <span class="dc-label">Amount Due</span>
+            <span class="dc-value" style="color:#ffcc00; font-size:1.1rem; font-weight:700;">₹{{ b.total_price }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Payment Mode</span>
+            <span class="dc-value">{{ (b.payment_mode or 'CASH') | upper }}</span>
+          </div>
+          <div class="dc-actions">
+            <button class="btn-success" onclick="confirmOfflinePayment('{{ b.id }}')">✅ PAYMENT RECEIVED</button>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% if not ns2.has_offline %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">No customers waiting to pay.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 
   <div style="padding: 20px">
     <div class="panel">
-      <h2 style="
-            font-family: 'Orbitron';
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: white;
-          ">
-        TODAY'S BOOKING LOGS
-      </h2>
-      <table width="100%" style="text-align: left; border-collapse: collapse; color: white">
-        <thead style="
-              color: var(--primary, #00f2ff);
-              border-bottom: 1px solid #333;
-            ">
-          <tr>
-            <th style="padding: 10px">Vehicle ID</th>
-            <th>Type</th>
-            <th>Mode</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for b in bookings %}
-          <tr style="border-bottom: 1px solid #222">
-            <td style="padding: 10px">#{{ b.vehicle_id }}</td>
-            <td>{{ (b.service_type or 'N/A') | upper }}</td>
-            <td class="{{ 'cash-color' if b.payment_mode == 'cash' else 'online-color' }}">
+      <h2 class="section-title">TODAY'S BOOKING LOGS</h2>
+      <div class="data-card-list">
+        {% for b in bookings %}
+        <div class="data-card">
+          <div class="dc-title">Vehicle #{{ b.vehicle_id }}</div>
+          <div class="dc-row">
+            <span class="dc-label">Service</span>
+            <span class="dc-value">{{ (b.service_type or 'N/A') | upper }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Payment Mode</span>
+            <span class="dc-value {{ 'cash-color' if b.payment_mode == 'cash' else 'online-color' }}">
               {{ (b.payment_mode or 'N/A') | upper }}
-            </td>
-            <td>₹{{ b.total_price or 0 }}</td>
-            <td>{{ (b.status or 'N/A') | upper }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            </span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Amount</span>
+            <span class="dc-value" style="font-weight:700;">₹{{ b.total_price or 0 }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Status</span>
+            <span class="dc-value">{{ (b.status or 'N/A') | upper }}</span>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not bookings %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">No bookings logged today.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 
   <script>
-    function toggleSlotRow(rowId) {
-      let el = document.getElementById(rowId);
-      if (el.style.display === "none") {
-        el.style.display = "table-row-group";
-      } else {
-        el.style.display = "none";
-      }
+    // Toggle slot-group detail panel
+    function toggleSlotRow(groupId) {
+      const el = document.getElementById(groupId);
+      if (el) el.classList.toggle('open');
     }
 
+    // Filter data-cards by vehicle ID text
+    function filterCards(inputId, listId) {
+      const filter = document.getElementById(inputId).value.toUpperCase();
+      const cards = document.querySelectorAll('#' + listId + ' .data-card');
+      cards.forEach(card => {
+        const txt = (card.dataset.search || card.textContent).toUpperCase();
+        card.style.display = txt.includes(filter) ? '' : 'none';
+      });
+    }
+
+    // Legacy filterTable kept for backward-compat (no tables remain, harmless)
     function filterTable(inputId, tableId) {
       let input = document.getElementById(inputId);
       let filter = input.value.toUpperCase();
       let table = document.getElementById(tableId);
+      if (!table) return;
       let tr = table.getElementsByTagName("tr");
       for (let i = 1; i < tr.length; i++) {
-        let td = tr[i].getElementsByTagName("td")[0]; // searching the first column (Vehicle ID)
+        let td = tr[i].getElementsByTagName("td")[0];
         if (td) {
           let txtValue = td.textContent || td.innerText;
           if (txtValue.toUpperCase().indexOf(filter) > -1) {

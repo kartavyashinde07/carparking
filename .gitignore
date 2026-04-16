@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Database (never commit production DB)
+*.db
+*.sqlite3
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.production
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Uploads (user files — too large for git)
+static/uploads/
+
+# Temp / scratch files
+scratch*.js
+tempCodeRunnerFile.py
+pyright_output.json
+Car-Drift-Animation-Video-Genera.zip
+
+# OS
+.DS_Store
+Thumbs.db

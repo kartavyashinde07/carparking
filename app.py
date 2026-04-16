@@ -5,20 +5,38 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import razorpay
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
-app.secret_key = "kartavya@306045827350730600"
+# Secret key from environment variable — NEVER hardcode in production
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-fallback-change-me-in-prod')
 
-# ✅ Razorpay Initialization (Test Keys Placeholder)
-RAZORPAY_KEY_ID = "rzp_test_YOUR_KEY_HERE"
-RAZORPAY_KEY_SECRET = "YOUR_SECRET_HERE"
+# Razorpay keys from environment variables
+RAZORPAY_KEY_ID     = os.environ.get('RAZORPAY_KEY_ID',     'rzp_test_YOUR_KEY_HERE')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'YOUR_SECRET_HERE')
 rzp_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-# ✅ CRITICAL FIX: Pointed to the correct database name from your VS Code structure
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///car_database.db'
+# ✅ CRITICAL FIX for HIGH TRAFFIC & POSTGRESQL:
+# Render varun aapoap database URL ghenyasathi os.environ vaparla ahe.
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///car_database.db')
+
+# Render kadhi kadhi 'postgres://' deto, pan SQLAlchemy la 'postgresql://' lagta
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# ✅ CONNECTION POOLING (High Traffic Handle Karnyasathi)
+# Jar server var PostgreSQL asel tar hazaro lokanna ekach veli handle karnyachi taqat
+if "postgresql" in database_url:
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 20,
+        'max_overflow': 40,
+        'pool_timeout': 30,
+        'pool_recycle': 1800,
+    }
 
 db = SQLAlchemy(app)
 
@@ -76,7 +94,6 @@ class Booking(db.Model):
     slot_id = db.Column(db.Integer)
     vehicle_id = db.Column(db.Integer)
     
-    # ✅ CRITICAL FIX: Added missing columns used in the frontend templates
     service_type = db.Column(db.String(20), default='self') 
     payment_mode = db.Column(db.String(20), default='online') 
 
@@ -85,7 +102,6 @@ class Booking(db.Model):
     status = db.Column(db.String(20), default='active')
     total_price = db.Column(db.Float, default=0)
 
-    # ✅ PAYMENT GATEWAY
     razorpay_order_id = db.Column(db.String(100), nullable=True)
     razorpay_payment_id = db.Column(db.String(100), nullable=True)
     razorpay_signature = db.Column(db.String(200), nullable=True)
@@ -96,7 +112,6 @@ class Booking(db.Model):
 
 @app.route('/')
 def index():
-    # If already logged in, skip the login cinematic and go to correct dashboard
     if 'user_id' in session:
         if session.get('role') == 'admin':
             return redirect('/admin')
@@ -111,7 +126,6 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Clean the input: remove spaces and make lowercase
         clean_email = request.form['email'].strip().lower()
 
         if User.query.filter(User.email.ilike(clean_email)).first():
@@ -169,7 +183,6 @@ def login():
     if request.method == 'GET':
         return redirect('/')
 
-    # Clean the input before checking the database
     clean_username = request.form['username'].strip().lower()
     user = User.query.filter(User.email.ilike(clean_username)).first()
 
@@ -183,7 +196,6 @@ def login():
         session['email'] = user.email
         session['phone'] = user.phone
 
-        # ✅ CRITICAL FIX: Proper routing based on roles
         if user.role == 'admin':
             return redirect('/admin')
         elif user.role == 'partner':
@@ -213,8 +225,6 @@ def dashboard():
                     b.total_price = 0
                     b.offline_request_time = None
                     dirty = True
-            else:
-                pass
         elif b.status == 'pending':
             if b.start_time:
                 elapsed = (now - b.start_time).total_seconds()
@@ -253,28 +263,24 @@ def dashboard():
 
 
 # ---------------- PARTNER CONSOLE ----------------
-# ✅ CRITICAL FIX: Created the missing route to serve partner_dashboard.html
 @app.route('/partner')
 def partner_dashboard():
     if session.get('role') != 'partner':
         return redirect('/')
 
     partner_id = session.get('user_id')
-    slots = ParkingSlot.query.filter_by(is_active=True, partner_id=partner_id).all() # ONLY show partner's own slots!
+    slots = ParkingSlot.query.filter_by(is_active=True, partner_id=partner_id).all() 
     applications = ParkingApplication.query.filter_by(partner_id=partner_id).order_by(ParkingApplication.id.desc()).all()
     
-    # Filter bookings to only show those placed exactly on this partner's slots
     my_slot_ids = [s.id for s in slots]
     bookings = Booking.query.filter(Booking.slot_id.in_(my_slot_ids)).order_by(Booking.id.desc()).all() if my_slot_ids else []
     
-    # Financial logic
     raw_revenue = sum(b.total_price for b in bookings if b.status == 'completed')
-    total_revenue_net = round(raw_revenue * 0.8, 2) # 20% Admin Cut
+    total_revenue_net = round(raw_revenue * 0.8, 2) 
     
     cash_total = round(sum(b.total_price for b in bookings if b.status == 'completed' and b.payment_mode == 'cash'), 2)
     online_total = round(sum(b.total_price for b in bookings if b.status == 'completed' and b.payment_mode != 'cash'), 2)
 
-    # Grouping logic (same as admin)
     grouped_slots = {}
     for slot in slots:
         key = (slot.slot_number, slot.lat, slot.lng)
@@ -296,7 +302,6 @@ def partner_dashboard():
             grouped_slots[key]['available'] += 1
         grouped_slots[key]['slots'].append(slot)
 
-    # Fetch users so partner can see user details for bookings
     users = User.query.all()
 
     return render_template('partner_dashboard.html', 
@@ -328,7 +333,6 @@ def partner_submit_parking():
     photo_url = ''
     doc_url = ''
     
-    # Save files to static/uploads
     os.makedirs('static/uploads', exist_ok=True)
     if photo and photo.filename:
         filename = secure_filename(photo.filename)
@@ -372,7 +376,6 @@ def admin():
     active = Booking.query.filter_by(status='active').count()
     revenue = sum(b.total_price for b in bookings)
     
-    # Grouping logic
     grouped_slots = {}
     for slot in slots:
         key = (slot.slot_number, slot.lat, slot.lng)
@@ -470,7 +473,6 @@ def admin_approve_app(app_id):
     if application and application.status == 'pending':
         application.status = 'approved'
         
-        # create physical slots
         for i in range(application.capacity):
             slot = ParkingSlot(
                 slot_number=application.location_name,  # type: ignore
@@ -501,7 +503,7 @@ def admin_toggle_block(user_id):
     if session.get('role') != 'admin':
         return redirect('/')
     u = User.query.get(user_id)
-    if u and u.role != 'admin': # Prevent blocking admin himself
+    if u and u.role != 'admin': 
         u.is_active = not u.is_active
         db.session.commit()
     return redirect('/admin')
@@ -517,7 +519,7 @@ def god_mode():
     users = User.query.all()
     
     bookings = Booking.query.filter_by(status='completed').all()
-    revenue = sum(b.total_price for b in bookings) * 0.20 # Admin gets 20%
+    revenue = sum(b.total_price for b in bookings) * 0.20 
     
     return render_template('god_mode.html', partners=partners_details, users=users, revenue=round(revenue, 2))
 
@@ -526,7 +528,7 @@ def toggle_block(user_id):
     if session.get('role') != 'admin':
         return redirect('/')
     u = User.query.get(user_id)
-    if u and u.role != 'admin': # Prevent blocking admin himself
+    if u and u.role != 'admin': 
         u.is_active = not u.is_active
         db.session.commit()
     return redirect('/god')
@@ -552,14 +554,12 @@ def book():
     try:
         data = request.get_json()
 
-        # Base query to find available slot of the requested type
         query = ParkingSlot.query.filter(
             (ParkingSlot.type == data['vehicle_type']) | (ParkingSlot.type == 'both'),
             ParkingSlot.is_occupied == False,
             ParkingSlot.is_active == True
         )
         
-        # Strictly enforce the map location selected by the user
         if data.get('location_name'):
             query = query.filter(ParkingSlot.slot_number == data['location_name'])
             
@@ -568,26 +568,23 @@ def book():
         if not slot:
             return jsonify({"success": False, "message": "No slots available for this vehicle type"})
 
-        # Register the vehicle
         vehicle = Vehicle(
             user_id=session['user_id'],  # type: ignore
             plate_number=data['plate_number'],  # type: ignore
             type=data['vehicle_type']  # type: ignore
         )
         db.session.add(vehicle)
-        db.session.flush() # Flush to get vehicle.id before committing
+        db.session.flush() 
 
-        # Create the booking explicitly as pending
         booking = Booking(
             user_id=session['user_id'],  # type: ignore
             slot_id=slot.id,  # type: ignore
             vehicle_id=vehicle.id,  # type: ignore
-            service_type=data.get('service_type', 'self'), # Safely grab service type  # type: ignore
-            payment_mode='online', # Default assumed until payment screen  # type: ignore
+            service_type=data.get('service_type', 'self'),  # type: ignore
+            payment_mode='online',  # type: ignore
             status='pending'  # type: ignore
         )
 
-        # Mark slot as occupied (reserved for this incoming user)
         slot.is_occupied = True
 
         db.session.add(booking)
@@ -609,7 +606,6 @@ def confirm_arrival(target_id):
     if not booking or booking.status != 'pending':
         return jsonify({"success": False, "message": "Invalid booking"}), 400
 
-    # Reset the timer as customer just physically arrived
     booking.status = 'active'
     booking.start_time = datetime.utcnow()
     
@@ -658,7 +654,6 @@ def init_online_payment(target_id):
     amount_paise = int(amount_inr * 100)
 
     try:
-        # Create Razorpay Order
         order = rzp_client.order.create({  # type: ignore
             "amount": amount_paise,
             "currency": "INR",
@@ -773,10 +768,11 @@ def subscription():
 
 # ---------------- DB INIT ----------------
 def init_db():
-    # ✅ CRITICAL FIX: Check for the correct database file name
-    db_exists = os.path.exists('instance/car_database.db') or os.path.exists('car_database.db')
+    # ✅ POSTGRESQL & SQLITE COMPATIBLE INIT
+    # Aata app file paths check karnyachi garaj nahi, direct database la vicharat ahot tables ahet ka
+    inspector = inspect(db.engine)
     
-    if not db_exists:
+    if not inspector.has_table("user"):
         db.create_all()
 
         # Seed initial parking slots
@@ -785,7 +781,7 @@ def init_db():
                 db.session.add(ParkingSlot(
                     slot_number=f"A{i}",  # type: ignore
                     type="4-wheeler",  # type: ignore
-                    lat=20.009 + (i * 0.001), # slightly offset so they dont overlap perfectly  # type: ignore
+                    lat=20.009 + (i * 0.001),  # type: ignore
                     lng=73.785  # type: ignore
                 ))
 
@@ -802,30 +798,29 @@ def init_db():
             print("Database initialized with default slots and Admin user.")
             
     else:
-        # Schema Evolution: Safely inject lat & lng for old database files to prevent crashing
+        # Schema Evolution: Junya SQLite users sathi navin columns add karnyacha prayatna
         try:
             db.session.execute(text('ALTER TABLE parking_slot ADD COLUMN lat FLOAT'))
             db.session.execute(text('ALTER TABLE parking_slot ADD COLUMN lng FLOAT'))
             db.session.commit()
-        except SQLAlchemyError:
+        except Exception:
             db.session.rollback()
         
         try:
             db.session.execute(text('ALTER TABLE parking_slot ADD COLUMN is_active BOOLEAN DEFAULT 1'))
             db.session.commit()
-        except SQLAlchemyError:
+        except Exception:
             db.session.rollback()
             
         try:
             db.session.execute(text('ALTER TABLE parking_slot ADD COLUMN partner_id INTEGER'))
             db.session.commit()
-        except SQLAlchemyError:
+        except Exception:
             db.session.rollback()
             
         try:
-            # Create ParkingApplication if it doesnt exist
             ParkingApplication.__table__.create(db.engine)  # type: ignore
-        except SQLAlchemyError:
+        except Exception:
             pass
 
         try:
@@ -834,13 +829,14 @@ def init_db():
             db.session.execute(text('ALTER TABLE booking ADD COLUMN razorpay_signature VARCHAR(200)'))
             db.session.execute(text('ALTER TABLE booking ADD COLUMN offline_request_time DATETIME'))
             db.session.commit()
-        except SQLAlchemyError:
+        except Exception:
             db.session.rollback()
 
-
-
 # ---------------- RUN ----------------
+# Initialise DB when process starts (works for both `python app.py` and gunicorn)
 with app.app_context():
-        init_db()
+    init_db()
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug_mode)
