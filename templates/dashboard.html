@@ -831,26 +831,36 @@
         }
 
         // ── Geolocation bootstrap ─────────────────────────────────
+        // STEP 1: Always initialize the map immediately with the default center
+        // so the user never sees a blank/broken map while waiting for GPS.
         if (document.getElementById('map')) {
+            initMap(NASHIK[0], NASHIK[1]);
+
+            // STEP 2: Request real GPS position in parallel (does not block map render)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    // ✅ SUCCESS — center on real location
+                    // ✅ SUCCESS — smoothly fly to real location & drop marker
                     function (pos) {
                         const { latitude, longitude } = pos.coords;
-                        initMap(latitude, longitude);
+                        // flyTo gives a smooth pan/zoom animation to the real position
+                        map.flyTo([latitude, longitude], 15, { animate: true, duration: 1.5 });
                         addYouAreHereMarker(latitude, longitude);
+                        showToast('📍 GPS location acquired.');
                     },
-                    // ❌ DENIED / ERROR — fall back to Nashik
-                    function () {
-                        initMap(NASHIK[0], NASHIK[1]);
-                        showToast('📍 Location access denied. Showing default city center.');
+                    // ❌ DENIED / ERROR — map already showing default view, just notify
+                    function (err) {
+                        let msg = '📍 Location unavailable. Showing default area.';
+                        if (err && err.code === 1) {
+                            msg = '📍 Location permission denied. Showing default area.';
+                        }
+                        showToast(msg);
                     },
-                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                    // Strict GPS options required for mobile hardware activation
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
             } else {
-                // Browser does not support geolocation
-                initMap(NASHIK[0], NASHIK[1]);
-                showToast('📍 Geolocation not supported. Showing default city center.');
+                // Browser does not support geolocation — map still works on default view
+                showToast('📍 Geolocation not supported. Showing default area.');
             }
         }
 
