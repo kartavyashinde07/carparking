@@ -831,22 +831,23 @@
         }
 
         // ── Geolocation bootstrap ─────────────────────────────────
-        // STEP 1: Always initialize the map immediately with the default center
-        // so the user never sees a blank/broken map while waiting for GPS.
+        // GPS configs: highAcc tries fast native GPS (3 s); lowAcc falls back
+        // to cell/Wi-Fi (5 s). A 60-second cache means instant re-loads.
+        const highAcc = { enableHighAccuracy: true,  timeout: 3000, maximumAge: 60000 };
+        const lowAcc  = { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 };
+
+        // STEP 1: Always render the map immediately so it is never blank.
         if (document.getElementById('map')) {
             initMap(NASHIK[0], NASHIK[1]);
 
-            // STEP 2: Use Leaflet's native locate API — more robust on mobile
-            map.locate({ setView: true, maxZoom: 15, enableHighAccuracy: true, timeout: 15000 });
+            // ── Success handler (shared by both high- and low-accuracy attempts) ──
+            function onGeoSuccess(e) {
+                const userLatLng = L.latLng(e.coords.latitude, e.coords.longitude);
 
-            // ✅ SUCCESS — pulsing "You are here" marker, then fit ONLY user + nearest slot
-            map.on('locationfound', function(e) {
-                const userLatLng = e.latlng;
-
-                // --- 1. Custom pulsing HTML divIcon (uses .you-are-here-icon CSS) ---
+                // 1. Add custom pulsing "You are here" marker
                 const youAreHereIcon = L.divIcon({
                     html: '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>',
-                    className: '',          // suppress Leaflet's default white box
+                    className: '',   // suppress Leaflet's default white box
                     iconSize:   [18, 18],
                     iconAnchor: [9, 9]
                 });
@@ -856,7 +857,7 @@
                     .openPopup();
                 showToast('📍 GPS location acquired.');
 
-                // --- 2. Find the SINGLE nearest parking slot from DOM ---
+                // 2. Find the single nearest parking slot from the hidden DOM list
                 const slotEls = Array.from(document.querySelectorAll('.slot-data-item'));
                 let nearestLatLng = null;
                 let minDist = Infinity;
@@ -866,28 +867,41 @@
                     const lng = parseFloat(el.dataset.lng);
                     if (isNaN(lat) || isNaN(lng)) return;
                     const slotLatLng = L.latLng(lat, lng);
-                    const dist = map.distance(e.latlng, slotLatLng);
+                    const dist = map.distance(userLatLng, slotLatLng);
                     if (dist < minDist) {
                         minDist = dist;
                         nearestLatLng = slotLatLng;
                     }
                 });
 
-                // --- 3. Strict bound: only if nearest slot is within 8 km ---
+                // 3. Smart zoom: fit user + nearest slot if within 8 km, else zoom to user
                 if (nearestLatLng && minDist < 8000) {
-                    const bounds = L.latLngBounds(e.latlng, nearestLatLng);
-                    map.flyToBounds(bounds, { padding: [60, 60], maxZoom: 16 });
+                    const bounds = L.latLngBounds(userLatLng, nearestLatLng);
+                    map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
                 } else {
-                    // Too far or no slots — zoom to user only
-                    map.flyTo(e.latlng, 15);
+                    map.flyTo(userLatLng, 15);
                 }
-            });
+            }
 
-            // ❌ DENIED / ERROR — map already showing default Nashik view, graceful fallback
-            map.on('locationerror', function(e) {
-                console.warn('Location error:', e.message);
+            // ── Final error handler: both attempts failed ──
+            function onGeoErrorFinal(err) {
+                console.error('Geolocation final error:', err.message);
                 alert('⚠️ Please enable GPS and allow location permissions for this site to see your accurate position.');
-            });
+            }
+
+            // ── High-accuracy error handler: immediately try low-accuracy fallback ──
+            function onGeoErrorHigh(err) {
+                console.warn('High-accuracy GPS timed out or failed, trying cell/Wi-Fi fallback:', err.message);
+                navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorFinal, lowAcc);
+            }
+
+            // STEP 2: Fire high-accuracy request (3 s timeout).
+            // On failure, onGeoErrorHigh retries with low-accuracy (5 s timeout).
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorHigh, highAcc);
+            } else {
+                console.warn('Geolocation API not supported by this browser.');
+            }
         }
 
         // ✅ NEW BOOK SLOT LOGIC
