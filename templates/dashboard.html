@@ -544,7 +544,7 @@
                     <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
                         target="_blank" class="payment-btn"
                         style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                        START NAVIGATION</a>
+                        START NAVIGATION (BY NAME)</a>
                     {% endif %}
                     <div
                         style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
@@ -797,7 +797,8 @@
                     const gmapsBtn = document.getElementById('gmaps-btn');
                     if (gmapsBtn) {
                         gmapsBtn.onclick = () => {
-                            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
+                            // ✅ FIXED: Official Google Maps Directions Link
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
                         };
                     }
                 });
@@ -814,37 +815,42 @@
 
             // 🎯 NEW: LOCATE ME BUTTON
             // ── 🎯 "Locate Me" Google Maps Style (bottom-right) ──────────
+            // ── 🎯 "Find Location" Control (bottom-right) ──────────
+            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
             const LocateControl = L.Control.extend({
-                options: { position: 'bottomright' }, // FIXED: Position shifted to bottom
+                options: { position: 'bottomright' },
                 onAdd: function () {
                     const wrapper = L.DomUtil.create('div');
-                    // Margin-bottom 80px thevlay jyamule khali 'Leaflet' chya navavar he yenar nahi
-                    wrapper.style.cssText = 'margin-bottom: 80px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
+                    // FIXED: margin-bottom reduced to 15px to push it to the very bottom
+                    wrapper.style.cssText = 'margin-bottom: 15px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
 
-                    // 1. "My Location" Label (Button chya var)
                     const label = L.DomUtil.create('div', '', wrapper);
-                    label.innerHTML = 'MY LOCATION';
+                    // FIXED: Text updated to FIND LOCATION
+                    label.innerHTML = 'FIND LOCATION';
                     label.style.cssText = 'background: rgba(0, 0, 0, 0.85); color: #00f2ff; font-size: 10px; padding: 5px 10px; border-radius: 6px; border: 1px solid #00f2ff; font-family: "Orbitron", sans-serif; white-space: nowrap; font-weight: bold; box-shadow: 0 4px 10px rgba(0,242,255,0.2); pointer-events: none; letter-spacing: 1px;';
 
-                    // 2. 🎯 Circle Button
                     const btn = L.DomUtil.create('button', '', wrapper);
-                    btn.title = 'Locate Me';
+                    btn.title = 'Find Location';
                     btn.innerHTML = '🎯';
                     btn.style.cssText = 'background: #1e1e1e; color: #00f2ff; border: 2px solid #00f2ff; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.6); transition: 0.2s;';
-
+                    
                     L.DomEvent.disableClickPropagation(wrapper);
                     L.DomEvent.on(btn, 'click', function (e) {
                         e.preventDefault();
                         showToast('📍 Fetching exact GPS...');
                         if (navigator.geolocation) {
+                            // CRITICAL FIX: maximumAge: 0 forces a fresh satellite ping
+                            // Uses global onGeoSuccess for the pulsing red dot
                             navigator.geolocation.getCurrentPosition(
                                 onGeoSuccess,
-                                onGeoErrorFinal,
+                                function (err) {
+                                    if (err.code === 1) { showToast('⚠️ Location permission blocked. Allow in settings.', 4000); } 
+                                    else { showToast('⚠️ GPS weak. Showing default map.', 4000); }
+                                },
                                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                             );
                         }
                     });
-
                     return wrapper;
                 }
             });
@@ -895,6 +901,7 @@
         }
 
         // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam)
+        // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam & Mobile Popup Fix)
         async function initBooking(serviceType) {
             const plate = document.getElementById("plate").value.trim();
             const type = document.getElementById("type").value;
@@ -910,6 +917,12 @@
                 btn.style.cursor = 'not-allowed';
             });
 
+            // 🚀 MOBILE POPUP BLOCKER FIX: Open blank tab IMMEDIATELY
+            let mapTab = null;
+            if (window.selectedLotLat && window.selectedLotLng) {
+                mapTab = window.open('about:blank', '_blank');
+            }
+
             const res = await fetch("/api/book", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -918,14 +931,15 @@
                 })
             });
             const data = await safeJson(res);
+
             if (data && data.success) {
-                // 🗺️ AUTO NAVIGATION OPENING
-                if (window.selectedLotLat && window.selectedLotLng) {
-                    const gmapUrl = `https://www.google.com/maps/dir/?api=1&destination=$${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
-                    window.open(gmapUrl, '_blank');
+                // 🗺️ AUTO NAVIGATION OPENING (Official Google Maps URL)
+                if (mapTab) {
+                    mapTab.location.href = `https://www.google.com/maps/dir/?api=1&destination=${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
                 }
                 setTimeout(() => window.location.reload(), 1500);
             } else {
+                if (mapTab) mapTab.close();
                 alert("ERROR: " + (data ? data.message : "Failed"));
                 window.location.reload();
             }
