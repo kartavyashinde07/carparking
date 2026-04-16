@@ -855,12 +855,39 @@
                         'box-shadow:0 1px 5px rgba(0,0,0,0.5)'
                     ].join(';');
                     L.DomEvent.disableClickPropagation(btn);
-                    L.DomEvent.on(btn, 'click', function () {
-                        showToast('Fetching GPS...');
+                    L.DomEvent.on(btn, 'click', function (e) {
+                        if (e) e.preventDefault();
+                        showToast('📍 Fetching exact GPS...');
+                        
                         navigator.geolocation.getCurrentPosition(
-                            onGeoSuccess,
-                            onGeoErrorFinal,
-                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                            function (pos) {
+                                const lat = pos.coords.latitude;
+                                const lng = pos.coords.longitude;
+                                map.flyTo([lat, lng], 16);
+                                
+                                const iconHtml = '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>';
+                                const youAreHereIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+                                L.marker([lat, lng], { icon: youAreHereIcon }).addTo(map).bindPopup('<b>📍 You are here</b>').openPopup();
+                                
+                                showToast('📍 Location found!');
+                            },
+                            function (err) {
+                                // Jar timeout zala tar low accuracy try karel
+                                if (err.code === 3) {
+                                    showToast('⚠️ GPS taking time, trying alternative...');
+                                    // Low accuracy fallback
+                                    navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorFinal, { enableHighAccuracy: false, timeout: 10000 });
+                                } else if (err.code === 1) {
+                                    showToast('⚠️ Permission denied.');
+                                } else {
+                                    showToast('⚠️ GPS Error.');
+                                }
+                            },
+                            { 
+                                enableHighAccuracy: true, 
+                                timeout: 20000,   // ✅ 20 seconds kela
+                                maximumAge: 5000  // ✅ 5 sec junya location la allow kela jyamule instant disel
+                            }
                         );
                     });
                     return btn;
