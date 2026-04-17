@@ -479,6 +479,9 @@
                     <hr>
                     <a href="/my_info">👤 My Info</a>
                     <a href="/subscription">⭐ Subscription</a>
+                    {% if session.role == 'partner' %}
+                    <a href="/my_applications">🅿️ My Applications</a>
+                    {% endif %}
                     <a href="/logout" class="dropdown-logout">🚪 Logout</a>
                 </div>
             </div>
@@ -500,76 +503,88 @@
         </div>
 
         <div class="panel">
-            <h2>MY LOGS</h2>
+            <h2 style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                MY LOGS
+                {% if session.role == 'partner' %}
+                <input type="text" id="user-log-search" placeholder="Search Vehicle ID..." class="section-search" style="margin-bottom: 0; width: 220px; font-size: 0.8rem; padding: 8px 12px; border-radius: 4px;">
+                {% endif %}
+            </h2>
+            <div id="logs-container">
 
             {% if bookings %}
             {% for booking in bookings|reverse %}
-            <div class="booking-item {{ booking.status }}">
-                <div class="booking-info">
-                    <b>Slot ID: #{{ booking.slot_id }}</b>
-                    <span class="status-badge {{ booking.status }}">{{ booking.status }}</span>
-
-                    <small>
-                        {% if booking.status == 'pending' %}
-                        Awaiting Arrival Confirmation <br>
-                        {% else %}
-                        Time In: {{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}
-                        <br>
-                        {% endif %}
-                        Vehicle ID: #{{ booking.vehicle_id }}
-                    </small>
-
-                    {% if booking.status == 'completed' %}
-                    <span class="price">₹ {{ booking.total_price }}</span>
-                    {% endif %}
+            <div class="booking-item log-item {{ booking.status }}" data-vehicle="{{ booking.vehicle_id }}">
+                <div class="log-header" onclick="toggleDetails(this)">
+                    <div class="dc-title">Vehicle #{{ booking.vehicle_id }}</div>
+                    <span class="status-badge {{ booking.status }}">{{ booking.status | upper }}</span>
                 </div>
 
-                {% if booking.status == 'pending' %}
-                {% set ns = namespace(lat=None, lng=None, name="") %}
-                {% for s in slots %}
-                {% if s.id == booking.slot_id %}
-                {% set ns.lat = s.lat %}
-                {% set ns.lng = s.lng %}
-                {% set ns.name = s.slot_number %}
-                {% endif %}
-                {% endfor %}
-
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    {% if ns.lat and ns.lng %}
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
-                        target="_blank" class="payment-btn"
-                        style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                        START NAVIGATION</a>
-                    {% else %}
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
-                        target="_blank" class="payment-btn"
-                        style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                        START NAVIGATION</a>
-                    {% endif %}
-                    <div
-                        style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                        ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
+                <div class="booking-details {{ 'hidden' if booking.status not in ['pending', 'active', 'offline_pending'] else '' }}">
+                    <div class="dc-row" style="margin-bottom: 8px;">
+                        <span class="dc-label">Slot ID</span>
+                        <span class="dc-value">#{{ booking.slot_id }}</span>
                     </div>
-                    <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')">✖ CANCEL</button>
+                    <div class="dc-row" style="margin-bottom: 8px;">
+                        <span class="dc-label">Time In</span>
+                        <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</span>
+                    </div>
+                    {% if booking.status == 'completed' %}
+                    <div class="dc-row" style="margin-bottom: 8px;">
+                        <span class="dc-label">Amount</span>
+                        <span class="dc-value" style="color: var(--primary); font-weight: bold;">₹ {{ booking.total_price }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if booking.status == 'pending' %}
+                    {% set ns = namespace(lat=None, lng=None, name="") %}
+                    {% for s in slots %}
+                        {% if s.id == booking.slot_id %}
+                            {% set ns.lat = s.lat %}
+                            {% set ns.lng = s.lng %}
+                            {% set ns.name = s.slot_number %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                        {% if ns.lat and ns.lng %}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
+                            target="_blank" class="payment-btn"
+                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                            NAVIGATE</a>
+                        {% else %}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
+                            target="_blank" class="payment-btn"
+                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                            NAVIGATE</a>
+                        {% endif %}
+                        <div style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 6px 12px; border-radius: 4px; font-size: 0.75rem;">
+                            ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
+                        </div>
+                        <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')" style="font-size: 0.75rem; padding: 6px 12px;">✖ CANCEL</button>
+                    </div>
+
+                    <script>
+                        window.pendingBookingTimers = window.pendingBookingTimers || [];
+                        window.pendingBookingTimers.push({
+                            id: "{{ booking.id }}",
+                            remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
+                        });
+                    </script>
+                    {% endif %}
+
+                    {% if booking.status == 'active' %}
+                    <button class="end-btn" onclick="endBooking('{{ booking.id }}', '{{ booking.vehicle_id }}')" style="margin-top: 15px; width: 100%;">END SESSION</button>
+                    {% endif %}
+
+                    <div class="details-actions" style="margin-top: 15px;">
+                        {% if booking.status == 'completed' %}
+                            <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
+                        {% endif %}
+                    </div>
                 </div>
-
-                <script>
-                    window.pendingBookingTimers = window.pendingBookingTimers || [];
-                    window.pendingBookingTimers.push({
-                        id: "{{ booking.id }}",
-                        remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
-                    });
-                </script>
-                {% endif %}
-
-                {% if booking.status == 'active' %}
-                <button class="end-btn" onclick="endBooking('{{ booking.id }}', '{{ booking.vehicle_id }}')">END
-                    SESSION</button>
-                {% endif %}
 
                 {% if booking.status == 'offline_pending' %}
                 <script>
-                    // FIXED: Wrapping Jinja variables inside Number() and quotes completely clears the 4 VS Code Syntax Errors
                     window.pendingOfflineBooking = {
                         id: "{{ booking.id }}",
                         vehicle_id: "{{ booking.vehicle_id }}",
@@ -585,6 +600,7 @@
                 No booking records found in the system.
             </div>
             {% endif %}
+            </div>
         </div>
 
     </div>
@@ -1096,6 +1112,71 @@
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
+        function toggleDetails(header) {
+            const details = header.nextElementSibling;
+            details.classList.toggle('hidden');
+        }
+
+        function viewReceipt(bookingId) {
+            alert("Generating E-Receipt for Booking #" + bookingId);
+        }
+
+        // --- ADVANCED 3+5 PAGINATION LOGIC ---
+        function initAdvancedPagination(containerId, itemClass, searchInputId) {
+            const container = document.getElementById(containerId);
+            const searchInput = document.getElementById(searchInputId);
+            if (!container) return;
+            
+            const items = Array.from(container.querySelectorAll(itemClass));
+            // Use variable instead of hardcoding 3
+            if (!window.currentVisibleCount) {
+                window.currentVisibleCount = parseInt(sessionStorage.getItem('dashboardVisibleCount') || 3);
+            }
+            let visibleCount = window.currentVisibleCount;
+
+            function updateDisplay() {
+                const filter = searchInput ? searchInput.value.toUpperCase() : '';
+                const isSearching = filter.length > 0;
+
+                items.forEach((item, index) => {
+                    const text = (item.dataset.vehicle || item.textContent).toUpperCase();
+                    const matched = text.includes(filter);
+
+                    if (isSearching) {
+                        item.style.display = matched ? 'block' : 'none';
+                    } else {
+                        item.style.display = (index < visibleCount) ? 'block' : 'none';
+                    }
+                });
+
+                // Handle See More button
+                let btn = container.querySelector('.btn-see-more');
+                const shouldShowBtn = !isSearching && visibleCount < items.length;
+
+                if (shouldShowBtn) {
+                    if (!btn) {
+                        btn = document.createElement('button');
+                        btn.innerHTML = 'See More ⬇️';
+                        btn.className = 'btn-see-more';
+                        btn.onclick = () => {
+                            visibleCount += 5;
+                            window.currentVisibleCount = visibleCount;
+                            sessionStorage.setItem('dashboardVisibleCount', visibleCount);
+                            updateDisplay();
+                        };
+                        container.appendChild(btn);
+                    }
+                } else if (btn) {
+                    btn.remove();
+                }
+            }
+
+            if (searchInput) {
+                searchInput.onkeyup = updateDisplay;
+            }
+            updateDisplay();
+        }
+
         function toggleDropdown() {
             document.getElementById('profileDropdown').classList.toggle('active');
         }
@@ -1184,6 +1265,9 @@
                     }
                 }, 1000);
             }
+
+            // Init Pagination
+            initAdvancedPagination('logs-container', '.log-item', 'user-log-search');
         });
     </script>
 

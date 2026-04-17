@@ -70,9 +70,11 @@ body {
 body.index-body {
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     position: relative;
 }
@@ -102,6 +104,7 @@ body.index-body {
     width: 100%;
     max-width: 420px;
     padding: 0 16px;
+    margin-top: 0 !important;
 }
 
 .login-box {
@@ -435,7 +438,7 @@ body.index-body {
 .search-bar,
 .cyber-search {
     width: 100%;
-    padding: 11px 16px 11px 45px !important; /* Force padding for icon */
+    padding: 11px 16px 11px 35px !important; /* Force padding for icon */
     background: var(--surface-3);
     border: 1px solid var(--border);
     color: var(--text-main);
@@ -460,7 +463,7 @@ body.index-body {
 
 .search-icon {
     position: absolute;
-    left: 15px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
@@ -992,9 +995,12 @@ button:active {
 
 .dropdown-menu {
     position: absolute;
-    top: 130%;
+    top: 100%;
     right: 0;
-    width: 240px;
+    left: auto;
+    width: max-content;
+    min-width: 200px;
+    z-index: 9999;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -1216,5 +1222,92 @@ button:active {
     }
 
     /* Dropdown fills most of screen width */
-    .dropdown-menu { width: 88vw; }
+    .dropdown-menu { width: 88vw; right: 0; left: auto; }
+}
+
+/* ============================================================
+   PAGINATION BUTTONS
+   ============================================================ */
+.btn-see-more {
+    display: block;
+    width: fit-content;
+    margin: 15px auto;
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 8px 24px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.btn-see-more:hover {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 212, 232, 0.4);
+}
+
+/* ============================================================
+   ACCORDION LOGS & SEARCH
+   ============================================================ */
+.log-item {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 0;
+}
+
+.log-header:hover {
+    opacity: 0.8;
+}
+
+.booking-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+.booking-details.hidden {
+    display: none;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.details-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.section-search {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 232, 0.2);
+    color: #fff;
+    padding: 12px 15px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.section-search:focus {
+    border-color: var(--primary);
+    background: rgba(0, 212, 232, 0.05);
+    box-shadow: 0 0 10px rgba(0, 212, 232, 0.2);
 }

@@ -316,6 +316,16 @@ def partner_dashboard():
                            cash_total=cash_total,
                            online_total=online_total)
 
+@app.route('/my_applications')
+def my_applications():
+    if not session.get('user_id'):
+        return redirect('/')
+    
+    # Partner (user) chi applications list
+    applications = ParkingApplication.query.filter_by(partner_id=session['user_id']).order_by(ParkingApplication.created_at.desc()).all()
+    
+    return render_template('my_applications.html', applications=applications)
+
 from werkzeug.utils import secure_filename
 @app.route('/partner/submit_parking', methods=['POST'])
 def partner_submit_parking():

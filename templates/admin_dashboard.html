@@ -230,6 +230,81 @@
 
         /* --- Search UI now handled globally by style.css --- */
 
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            left: auto;
+            width: max-content;
+            min-width: 200px;
+            z-index: 9999;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 0;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px) scale(0.97);
+            transform-origin: top right;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .dropdown-header {
+            padding: 14px 18px;
+        }
+
+        .dropdown-header strong {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .dropdown-header small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dropdown-menu hr {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 4px 0 8px 0;
+        }
+
+        .dropdown-menu a {
+            display: flex;
+            align-items: center;
+            padding: 11px 18px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .dropdown-menu a:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dropdown-logout {
+            color: var(--accent) !important;
+        }
+
         /* --- PAGINATION STYLES --- */
         .user-row.hidden-row {
             display: none !important;
@@ -252,11 +327,10 @@
             transition: 0.3s;
             letter-spacing: 1px;
         }
-        .btn-view-more:hover {
-            background: var(--primary);
-            color: black;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
-        }
+        /* --- FORCE FIX: Search Bar Overlap --- */
+        .search-wrapper { position: relative; display: inline-block; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none; font-size: 1.1rem; }
+        .cyber-search, .section-search { padding-left: 40px !important; position: relative; z-index: 5; }
 
     </style>
 </head>
@@ -268,17 +342,17 @@
             <span style="margin-right: 20px; color: var(--text-muted); font-weight: bold;">[ ADMINISTRATOR MODE ]</span>
             <div class="profile-dropdown" style="margin-left: 20px;">
                 <div class="profile-circle" onclick="toggleDropdown()">
-                    {{ session.get('name', 'Admin')[0] | upper }}
+                    {{ session.get('name', 'Admin')[:1] | upper }}
                 </div>
                 <div class="dropdown-menu" id="profileDropdown">
                     <div class="dropdown-header">
                         <strong>{{ session.get('name', 'Admin') }}</strong>
-                        <small>{{ session.get('role', 'admin') | title }}</small>
+                        <small>Administrator</small>
                     </div>
-                    <hr>
+                    <hr />
                     <a href="/my_info">👤 My Info</a>
                     <a href="/subscription">⭐ Subscription</a>
-                    <a href="/god" class="admin-link">⚡ God Mode</a>
+                    <a href="/my_applications">🅿️ My Applications</a>
                     <a href="/logout" class="dropdown-logout">🚪 Logout</a>
                 </div>
             </div>
@@ -291,7 +365,7 @@
             <div class="stat-label">Active Bookings</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">₹{{ "%.2f"|format(revenue) }}</div>
+            <div class="stat-value">₹{{ "%.2f"|format(revenue | default(0, true)) }}</div>
             <div class="stat-label">Total Revenue</div>
         </div>
         <div class="stat-card">
@@ -354,7 +428,7 @@
 
     <h2>PARTNER PARKING APPLICATIONS</h2>
     <div class="table-container" style="margin-bottom: 40px; overflow-x: hidden;">
-        <table style="white-space: normal;">
+        <table id="table-admin-apps" style="white-space: normal;">
             <thead>
                 <tr>
                     <th>Location Name</th>
@@ -597,109 +671,105 @@
         </table>
     </div>
 
-    <h2>RECENT BOOKINGS</h2>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Booking ID</th>
-                    <th>User</th>
-                    <th>Vehicle ID</th>
-                    <th>Time In</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="bookings-tbody">
-                {% for booking in bookings|reverse %}
-                {% set b_user = users | selectattr("id", "equalto", booking.user_id) | list | first %}
-                <tr class="booking-row" {% if loop.index > 10 %}style="display: none;"{% endif %}>
-                    <td style="color: var(--text-muted);">#{{ booking.id }}</td>
-                    <td>{{ b_user.name if b_user else 'System / Deleted User' }}</td>
-                    <td>{{ booking.vehicle_id }}</td>
-                    <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</td>
-                    <td>
-                        <span class="badge {{ 'badge-active' if booking.status == 'active' else 'badge-completed' }}">
-                            {{ booking.status | upper }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if bookings|length > 10 %}
-                <tr id="more-bookings-btn-row">
-                    <td colspan="5" style="text-align: center; padding: 0;">
-                        <button onclick="document.querySelectorAll('.booking-row').forEach(r => r.style.display = 'table-row'); this.parentElement.parentElement.style.display = 'none';" style="width: 100%; background: rgba(0, 242, 255, 0.05); border: none; color: var(--primary); padding: 15px; cursor: pointer; font-family: 'Orbitron'; font-weight: bold; border-top: 1px solid rgba(0, 242, 255, 0.2); transition: 0.3s;" onmouseover="this.style.background='rgba(0, 242, 255, 0.1)'" onmouseout="this.style.background='rgba(0, 242, 255, 0.05)'">
-                            SHOW MORE BOOKINGS ▼
-                        </button>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if not bookings %}
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No bookings found.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+        <h2 style="margin-bottom: 0;">RECENT BOOKINGS</h2>
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="admin-log-search" placeholder="Search by Vehicle ID..." class="section-search" style="margin-bottom: 0; width: 250px;">
+        </div>
+    </div>
+    <div class="data-card-list" id="admin-logs-list" style="margin-bottom: 40px;">
+        {% for booking in bookings|reverse %}
+        {% set b_user = users | selectattr("id", "equalto", booking.user_id) | list | first %}
+        <div class="data-card log-item" data-vehicle="{{ booking.vehicle_id }}">
+            <div class="log-header" onclick="toggleDetails(this)">
+                <div class="dc-title">Vehicle #{{ booking.vehicle_id }}</div>
+                <span class="badge {{ 'badge-active' if booking.status == 'active' else 'badge-completed' }}">
+                    {{ booking.status | upper }}
+                </span>
+            </div>
+            <div class="booking-details hidden">
+                <div class="dc-row">
+                    <span class="dc-label">Booking ID</span>
+                    <span class="dc-value">#{{ booking.id }}</span>
+                </div>
+                <div class="dc-row">
+                    <span class="dc-label">User</span>
+                    <span class="dc-value">{{ b_user.name if b_user else 'System / Deleted User' }}</span>
+                </div>
+                <div class="dc-row">
+                    <span class="dc-label">Time In</span>
+                    <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</span>
+                </div>
+                <div class="details-actions">
+                    <button class="payment-btn" onclick="viewCustomerInfo('{{ booking.user_id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">👤 SEE CUSTOMER INFO</button>
+                    {% if booking.status == 'completed' %}
+                        <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not bookings %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">No bookings found.</p>
+        {% endif %}
     </div>
 
-    <h2>REGISTERED USERS</h2>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email (Customer ID)</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="users-tbody">
-                {% for user in users %}
-                <tr class="user-row {% if loop.index > 5 %}hidden-row{% endif %}">
-                    <td style="color: var(--text-muted);">#{{ user.id }}</td>
-                    <td style="font-weight: bold;">{{ user.name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.phone }}</td>
-                    <td>
-                        {% if user.role == 'admin' %}
-                            <span style="color: var(--accent); font-weight: bold; letter-spacing: 1px;">ADMIN</span>
-                        {% else %}
-                            <span style="color: var(--text-main);">{{ user.role | upper }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.is_active %}
-                            <span style="color: #00ff88; font-weight: bold;">ACTIVE</span>
-                        {% else %}
-                            <span style="color: #ff0055; font-weight: bold;">BLOCKED</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.role != 'admin' %}
-                            {% if user.is_active %}
-                                <a href="/admin/toggle-block/{{ user.id }}" class="btn-block">BLOCK</a>
-                            {% else %}
-                                <a href="/admin/toggle-block/{{ user.id }}" class="btn-unblock">UNBLOCK</a>
-                            {% endif %}
-                        {% else %}
-                            <span style="color: var(--text-muted);">-</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% if users|length > 5 %}
-        <div class="view-more-container">
-            <button id="view-more-users-btn" class="btn-view-more" onclick="toggleUsers()">VIEW MORE</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+        <h2 style="margin-bottom: 0;">REGISTERED USERS</h2>
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="admin-user-search" placeholder="Search by Name/Email..." class="section-search" style="margin-bottom: 0; width: 250px;">
         </div>
-        {% endif %}
+    </div>
+    <div class="data-card-list" id="admin-users-list">
+        {% for user in users %}
+        <div class="data-card user-card-item" data-search="{{ user.name }} {{ user.email }}">
+            <div class="log-header" onclick="toggleDetails(this)">
+                <div class="dc-title">{{ user.name }}</div>
+                <span style="color: {{ '#00ff88' if user.is_active else '#ff0055' }}; font-weight: bold; font-size: 0.8rem;">
+                    {{ 'ACTIVE' if user.is_active else 'BLOCKED' }}
+                </span>
+            </div>
+            <div class="booking-details hidden">
+                <div class="dc-row">
+                    <span class="dc-label">Email</span>
+                    <span class="dc-value">{{ user.email }}</span>
+                </div>
+                <div class="dc-row">
+                    <span class="dc-label">Phone</span>
+                    <span class="dc-value">{{ user.phone }}</span>
+                </div>
+                <div class="dc-row">
+                    <span class="dc-label">Role</span>
+                    <span class="dc-value" style="color: {{ 'var(--accent)' if user.role == 'admin' else 'inherit' }}; font-weight: bold;">{{ user.role | upper }}</span>
+                </div>
+                <div class="details-actions">
+                    {% if user.role != 'admin' %}
+                        {% if user.is_active %}
+                            <a href="/admin/toggle-block/{{ user.id }}" class="btn-block" style="text-decoration: none;">BLOCK USER</a>
+                        {% else %}
+                            <a href="/admin/toggle-block/{{ user.id }}" class="btn-verify" style="text-decoration: none; border-color: #00ff88; color: #00ff88;">UNBLOCK USER</a>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">(Admin Account)</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 
 </body>
 
 <script>
+    // --- CLEAR STATE ON FRESH NAVIGATION (NOT RELOAD) ---
+    if (performance.navigation.type !== performance.navigation.TYPE_RELOAD) {
+        Object.keys(sessionStorage).forEach(key => {
+            if (key.endsWith('_visibleCount')) sessionStorage.removeItem(key);
+        });
+    }
+
     function toggleDropdown() {
         document.getElementById('profileDropdown').classList.toggle('active');
     }
@@ -732,6 +802,123 @@
             }       
         }
     }
+
+    function toggleDetails(header) {
+        const details = header.nextElementSibling;
+        details.classList.toggle('hidden');
+    }
+
+    // Placeholder actions
+    function viewCustomerInfo(userId) {
+        alert("Fetching Customer Profile for ID: #" + userId);
+    }
+    function viewReceipt(bookingId) {
+        alert("Generating E-Receipt for Booking #" + bookingId);
+    }
+
+    // --- ADVANCED 3+5 PAGINATION LOGIC (WITH PERSISTENCE) ---
+    function initAdvancedPagination(containerId, itemClass, searchInputId, isTable = false) {
+        const container = document.getElementById(containerId);
+        const searchInput = document.getElementById(searchInputId);
+        if (!container) return;
+        
+        const items = Array.from(container.querySelectorAll(itemClass));
+        let visibleCount = parseInt(sessionStorage.getItem(containerId + '_visibleCount')) || 3;
+
+        function updateDisplay() {
+            const filter = searchInput ? searchInput.value.toUpperCase() : '';
+            const isSearching = filter.length > 0;
+
+            items.forEach((item, index) => {
+                const text = (item.dataset.vehicle || item.dataset.search || item.textContent).toUpperCase();
+                const matched = text.includes(filter);
+
+                if (isSearching) {
+                    item.style.display = matched ? (isTable ? 'table-row' : 'block') : 'none';
+                } else {
+                    item.style.display = (index < visibleCount) ? (isTable ? 'table-row' : 'block') : 'none';
+                }
+            });
+
+            // Handle See More button
+            let btn = container.querySelector('.btn-see-more');
+            const shouldShowBtn = !isSearching && visibleCount < items.length;
+
+            if (shouldShowBtn) {
+                if (!btn) {
+                    btn = document.createElement('button');
+                    btn.innerHTML = 'See More ⬇️';
+                    btn.className = 'btn-see-more';
+                    btn.onclick = () => {
+                        visibleCount += 5;
+                        sessionStorage.setItem(containerId + '_visibleCount', visibleCount);
+                        updateDisplay();
+                    };
+                    container.appendChild(btn);
+                }
+            } else if (btn) {
+                btn.remove();
+            }
+        }
+
+        if (searchInput) {
+            searchInput.onkeyup = updateDisplay;
+        }
+        updateDisplay();
+    }
+
+    function initPagination(containerId, itemClass, isTable = false) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        let items;
+        if (isTable) {
+            // FIXED: Only select rows that are NOT inside the hidden accordion tbodys
+            items = Array.from(container.querySelectorAll('tbody:not([id]) > tr')).filter(tr => !tr.innerText.includes('No '));
+        } else {
+            items = Array.from(container.querySelectorAll(itemClass));
+        }
+        
+        let visibleCount = parseInt(sessionStorage.getItem(containerId + '_visibleCount')) || 5;
+        if (items.length <= 5 && visibleCount <= 5) return;
+
+        function updateTableDisplay() {
+            items.forEach((item, index) => {
+                if (index >= visibleCount) item.style.display = 'none';
+                else item.style.display = isTable ? 'table-row' : 'flex';
+            });
+
+            let existingBtn = document.getElementById(containerId + '-btn');
+            if (visibleCount < items.length) {
+                if (!existingBtn) {
+                    const btn = document.createElement('button');
+                    btn.id = containerId + '-btn';
+                    btn.innerHTML = 'See More ⬇️';
+                    btn.className = 'btn-see-more';
+                    btn.style.cssText = "display: block; margin: 15px auto; padding: 8px 25px; background: transparent; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; border-radius: 4px; font-family: 'Orbitron';";
+                    
+                    btn.onclick = () => {
+                        visibleCount += 5;
+                        sessionStorage.setItem(containerId + '_visibleCount', visibleCount);
+                        updateTableDisplay();
+                    };
+                    container.after(btn);
+                }
+            } else if (existingBtn) {
+                existingBtn.remove();
+            }
+        }
+        updateTableDisplay();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initPagination('table-admin-apps', 'tr', true);
+        initPagination('table-admin-arrivals', 'tr', true);
+        initPagination('table-admin-payments', 'tr', true);
+        
+        initAdvancedPagination('admin-logs-list', '.log-item', 'admin-log-search');
+        initAdvancedPagination('admin-users-list', '.user-card-item', 'admin-user-search');
+    });
 
     async function confirmOfflinePayment(id) {
         if (!confirm("Confirm you have received the cash payment from the customer?")) return;
@@ -903,37 +1090,22 @@
         }
     }
 
-    // --- NEW: USER PAGINATION TOGGLE ---
-    let usersShowingAll = false;
-    function toggleUsers() {
-        const rows = document.querySelectorAll('.user-row');
-        const btn = document.getElementById('view-more-users-btn');
-        
-        usersShowingAll = !usersShowingAll;
-        
-        rows.forEach((row, index) => {
-            if (index >= 5) {
-                if (usersShowingAll) {
-                    row.classList.remove('hidden-row');
-                } else {
-                    row.classList.add('hidden-row');
-                }
-            }
-        });
-        
-        btn.innerText = usersShowingAll ? 'VIEW LESS' : 'VIEW MORE';
-    }
-
-    // --- NEW: SMART AUTO-REFRESH (10s) ---
+    // --- FIXED: SMART AUTO-REFRESH (10S) WITH PERSISTENCE CHECK ---
     setInterval(function() {
-        // Pauses refresh if user is typing in ANY input field
         const focusedElement = document.activeElement;
         const isUserTyping = focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA');
+        const hasSearchText = Array.from(document.querySelectorAll('.cyber-search, .section-search')).some(input => input.value.trim() !== "");
         
-        // Also check if search bars have value (optional but safer)
-        const hasSearchText = Array.from(document.querySelectorAll('.cyber-search')).some(input => input.value.trim() !== "");
+        // Check if the modal is open
+        const isModalOpen = document.getElementById('add-parking-modal').classList.contains('active');
+        
+        // Check if any accordion row is expanded (display: table-row-group)
+        const isAccordionOpen = Array.from(document.querySelectorAll('tbody[id^="app-"], tbody[id^="slots-"]')).some(tbody => tbody.style.display === 'table-row-group');
 
-        if (!isUserTyping && !hasSearchText) {
+        // NEW: Check if any list is expanded beyond its default state
+        const isListExpanded = Object.keys(sessionStorage).some(key => key.endsWith('_visibleCount') && parseInt(sessionStorage.getItem(key)) > 5);
+
+        if (!isUserTyping && !hasSearchText && !isModalOpen && !isAccordionOpen && !isListExpanded) {
             console.log("Auto-refreshing dashboard...");
             window.location.reload();
         } else {

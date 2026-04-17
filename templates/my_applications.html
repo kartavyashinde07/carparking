@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Applications | N-PARK SUPREME</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body style="background: #121212; color: #f0f0f0; font-family: 'Inter', sans-serif;">
+  <header style="padding: 16px 20px; border-bottom: 1px solid rgba(0, 212, 232, 0.15); display: flex; justify-content: space-between; align-items: center;">
+    <h1 style="font-family: 'Orbitron', sans-serif; color: var(--primary, #00d4e8); font-size: 1.3rem; margin: 0;">MY APPLICATIONS</h1>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a href="/partner" class="btn-primary" style="text-decoration:none; padding:10px 18px; font-size:0.85rem; border-radius:var(--radius-sm);">BACK TO DASHBOARD</a>
+      <div class="profile-dropdown">
+        <div class="profile-circle" onclick="toggleDropdown()" style="width: 40px; height: 40px; background: var(--primary); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer;">
+          {{ session.get('name', 'U')[0] | upper }}
+        </div>
+        <div class="dropdown-menu" id="profileDropdown">
+          <div class="dropdown-header">
+            <strong>{{ session.get('name', 'User') }}</strong>
+            <small>{{ session.get('role', 'user') | title }}</small>
+          </div>
+          <hr />
+          <a href="/my_info">👤 My Info</a>
+          <a href="/subscription">⭐ Subscription</a>
+          <a href="/my_applications">🅿️ My Applications</a>
+          <a href="/logout" class="dropdown-logout">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div style="padding: 30px 20px; max-width: 800px; margin: 0 auto;">
+    <div class="panel">
+      <h2 class="section-title">ALL SUBMITTED APPLICATIONS</h2>
+      <div class="data-card-list" id="apps-container">
+        {% for app in applications %}
+        <div class="data-card app-item">
+          <div class="dc-title">{{ app.location_name }}</div>
+          <div class="dc-row">
+            <span class="dc-label">Type</span>
+            <span class="dc-value">{{ app.type | upper }}</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Capacity</span>
+            <span class="dc-value">{{ app.capacity }} slots</span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Submitted</span>
+            <span class="dc-value" style="color:#8a8a8a;">
+              {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else 'N/A' }}
+            </span>
+          </div>
+          <div class="dc-row">
+            <span class="dc-label">Status</span>
+            <span class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
+              {{ app.status | upper }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not applications %}
+        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">You haven't submitted any parking lands yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDropdown() {
+      document.getElementById('profileDropdown').classList.toggle('active');
+    }
+    window.onclick = function(event) {
+      if (!event.target.matches('.profile-circle')) {
+        var dropdowns = document.getElementsByClassName("dropdown-menu");
+        for (var i = 0; i < dropdowns.length; i++) {
+          var openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('active')) {
+            openDropdown.classList.remove('active');
+          }
+        }
+      }
+    }
+
+    // --- REUSABLE PAGINATION LOGIC ---
+    function initPagination(containerId, itemClass) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const items = container.querySelectorAll(itemClass);
+        if (items.length <= 5) return;
+
+        items.forEach((item, index) => {
+            if (index >= 5) item.style.display = 'none';
+        });
+
+        const btn = document.createElement('button');
+        btn.innerHTML = 'See More ⬇️';
+        btn.className = 'btn-see-more';
+        btn.style.marginTop = '20px';
+        btn.onclick = () => {
+            let revealedCount = 0;
+            items.forEach((item) => {
+                if (item.style.display === 'none' && revealedCount < 5) {
+                    item.style.display = 'block';
+                    revealedCount++;
+                }
+            });
+            if (!Array.from(items).some(i => i.style.display === 'none')) {
+                btn.remove();
+            }
+        };
+        container.after(btn);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initPagination('apps-container', '.app-item');
+    });
+  </script>
+</body>
+</html>

@@ -167,6 +167,7 @@
           <hr />
           <a href="/my_info">👤 My Info</a>
           <a href="/subscription">⭐ Subscription</a>
+          <a href="/my_applications">🅿️ My Applications</a>
           <a href="/logout" class="dropdown-logout">🚪 Logout</a>
         </div>
       </div>
@@ -285,42 +286,6 @@
     </div>
   </div>
 
-  <div style="padding: 20px">
-    <div class="panel">
-      <h2 class="section-title">MY PARKING APPLICATIONS</h2>
-      <div class="data-card-list">
-        {% for app in applications %}
-        <div class="data-card">
-          <div class="dc-title">{{ app.location_name }}</div>
-          <div class="dc-row">
-            <span class="dc-label">Type</span>
-            <span class="dc-value">{{ app.type | upper }}</span>
-          </div>
-          <div class="dc-row">
-            <span class="dc-label">Capacity</span>
-            <span class="dc-value">{{ app.capacity }} slots</span>
-          </div>
-          <div class="dc-row">
-            <span class="dc-label">Submitted</span>
-            <span class="dc-value" style="color:#8a8a8a;">
-              {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else 'N/A' }}
-            </span>
-          </div>
-          <div class="dc-row">
-            <span class="dc-label">Status</span>
-            <span
-              class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
-              {{ app.status | upper }}
-            </span>
-          </div>
-        </div>
-        {% endfor %}
-        {% if not applications %}
-        <p style="color:#8a8a8a; text-align:center; padding:20px 0;">You haven't submitted any parking lands yet.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
 
   <div style="padding: 20px">
     <h2 style="
@@ -545,11 +510,11 @@
       <div class="section-header">
         <h2 class="section-title" style="color:#ffcc00; border-bottom-color:rgba(255,204,0,0.2);">INCOMING ARRIVALS
           (PENDING)</h2>
-      <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-arrivals" class="search-bar"
-          onkeyup="filterCards('search-arrivals', 'arrivals-list')" placeholder="Search by Vehicle ID..." />
-      </div>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-arrivals" class="search-bar"
+            onkeyup="filterCards('search-arrivals', 'arrivals-list')" placeholder="Search by Vehicle ID..." />
+        </div>
       </div>
       <div class="data-card-list" id="arrivals-list">
         {% set ns = namespace(has_pending=false) %}
@@ -588,11 +553,11 @@
       <div class="section-header">
         <h2 class="section-title" style="color:#ff2d6b; border-bottom-color:rgba(255,45,107,0.2);">PENDING OFFLINE
           PAYMENTS</h2>
-      <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-payments" class="search-bar"
-          onkeyup="filterCards('search-payments', 'payments-list')" placeholder="Search by Vehicle ID..." />
-      </div>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-payments" class="search-bar"
+            onkeyup="filterCards('search-payments', 'payments-list')" placeholder="Search by Vehicle ID..." />
+        </div>
       </div>
       <div class="data-card-list" id="payments-list">
         {% set ns2 = namespace(has_offline=false) %}
@@ -625,7 +590,7 @@
   <div style="padding: 20px">
     <div class="panel">
       <h2 class="section-title">TODAY'S BOOKING LOGS</h2>
-      <div class="data-card-list">
+      <div class="data-card-list" id="logs-list">
         {% for b in bookings %}
         <div class="data-card">
           <div class="dc-title">Vehicle #{{ b.vehicle_id }}</div>
@@ -672,6 +637,41 @@
         card.style.display = txt.includes(filter) ? '' : 'none';
       });
     }
+
+    // --- REUSABLE PAGINATION LOGIC ---
+    function initPagination(containerId, itemClass) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const items = container.querySelectorAll(itemClass);
+      if (items.length <= 5) return;
+
+      items.forEach((item, index) => {
+        if (index >= 5) item.style.display = 'none';
+      });
+
+      const btn = document.createElement('button');
+      btn.innerHTML = 'See More ⬇️';
+      btn.className = 'btn-see-more';
+      btn.onclick = () => {
+        let revealedCount = 0;
+        items.forEach((item) => {
+          if (item.style.display === 'none' && revealedCount < 5) {
+            item.style.display = 'flex'; // Use flex for data-cards
+            revealedCount++;
+          }
+        });
+        if (!Array.from(items).some(i => i.style.display === 'none')) {
+          btn.remove();
+        }
+      };
+      container.after(btn);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initPagination('arrivals-list', '.data-card');
+      initPagination('payments-list', '.data-card');
+      initPagination('logs-list', '.data-card');
+    });
 
     // Legacy filterTable kept for backward-compat (no tables remain, harmless)
     function filterTable(inputId, tableId) {
@@ -855,10 +855,10 @@
   <!-- ✅ SMART AUTO-REFRESH: Updates partner view without interrupting active interactions -->
   <script>
     setInterval(function () {
-      const modalOpen    = document.getElementById('add-parking-modal')
-                            && document.getElementById('add-parking-modal').classList.contains('active');
-      const searchActive = (document.getElementById('search-arrivals')  || { value: '' }).value.trim() !== '' ||
-                           (document.getElementById('search-payments')  || { value: '' }).value.trim() !== '';
+      const modalOpen = document.getElementById('add-parking-modal')
+        && document.getElementById('add-parking-modal').classList.contains('active');
+      const searchActive = (document.getElementById('search-arrivals') || { value: '' }).value.trim() !== '' ||
+        (document.getElementById('search-payments') || { value: '' }).value.trim() !== '';
 
       if (!modalOpen && !searchActive) {
         window.location.reload();
