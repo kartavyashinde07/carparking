@@ -376,7 +376,7 @@ def admin():
     applications = ParkingApplication.query.filter_by(status='pending').order_by(ParkingApplication.id.desc()).all()
 
     active = Booking.query.filter_by(status='active').count()
-    revenue = sum(b.total_price for b in bookings)
+    revenue = round(sum(b.total_price for b in bookings), 2)
     
     grouped_slots = {}
     for slot in slots:

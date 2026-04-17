@@ -103,7 +103,7 @@
 <header style="padding: 20px 30px; border-bottom: 1px solid rgba(0, 242, 255, 0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5);">
     <h1 style="color: var(--primary); font-family: 'Orbitron'; margin: 0; letter-spacing: 2px;">GOD MODE ACCESS</h1>
     <div class="stats" style="display: flex; align-items: center; gap: 20px;">
-        <span style="font-size: 1.2rem;">LIVE REVENUE: <b style="color: #00ff88; font-family: 'Orbitron';">₹{{ revenue }}</b></span>
+        <span style="font-size: 1.2rem;">LIVE REVENUE: <b style="color: #00ff88; font-family: 'Orbitron';">₹{{ "%.2f"|format(revenue) }}</b></span>
         <div class="profile-dropdown" style="margin-left: 20px;">
             <div class="profile-circle" onclick="toggleDropdown()">
                 {{ session.get('name', 'Admin')[0] | upper }}

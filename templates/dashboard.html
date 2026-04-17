@@ -797,7 +797,7 @@
                     const gmapsBtn = document.getElementById('gmaps-btn');
                     if (gmapsBtn) {
                         gmapsBtn.onclick = () => {
-                            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
                         };
                     }
                 });
@@ -921,7 +921,7 @@
             if (data && data.success) {
                 // 🗺️ AUTO NAVIGATION OPENING
                 if (window.selectedLotLat && window.selectedLotLng) {
-                    const gmapUrl = `https://www.google.com/maps/dir/?api=1&destination=$${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
+                    const gmapUrl = `https://www.google.com/maps/dir/?api=1&destination=${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
                     window.open(gmapUrl, '_blank');
                 }
                 setTimeout(() => window.location.reload(), 1500);
