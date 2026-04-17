@@ -544,7 +544,7 @@
                     <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
                         target="_blank" class="payment-btn"
                         style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.8rem; padding: 8px 15px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                        START NAVIGATION (BY NAME)</a>
+                        START NAVIGATION</a>
                     {% endif %}
                     <div
                         style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;">
@@ -797,8 +797,7 @@
                     const gmapsBtn = document.getElementById('gmaps-btn');
                     if (gmapsBtn) {
                         gmapsBtn.onclick = () => {
-                            // ✅ FIXED: Official Google Maps Directions Link
-                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
                         };
                     }
                 });
@@ -815,64 +814,37 @@
 
             // 🎯 NEW: LOCATE ME BUTTON
             // ── 🎯 "Locate Me" Google Maps Style (bottom-right) ──────────
-            // ── 🎯 "Find Location" Control (bottom-right) ──────────
-            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
-            // ── 🎯 "Find Location" Control (Actual Bottom-Right) ──────────
-           // ── 🎯 "Find Location" Control (Working Logic + Bottom Right UI) ──────────
             const LocateControl = L.Control.extend({
-                options: { position: 'bottomright' },
+                options: { position: 'bottomright' }, // FIXED: Position shifted to bottom
                 onAdd: function () {
                     const wrapper = L.DomUtil.create('div');
-                    // Margin-bottom 20px mhanje ekdam khali disel
-                    wrapper.style.cssText = 'margin-bottom: 20px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
+                    // Margin-bottom 80px thevlay jyamule khali 'Leaflet' chya navavar he yenar nahi
+                    wrapper.style.cssText = 'margin-bottom: 80px; margin-right: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px;';
 
-                    // 1. Text Box (FIND LOCATION)
+                    // 1. "My Location" Label (Button chya var)
                     const label = L.DomUtil.create('div', '', wrapper);
                     label.innerHTML = 'MY LOCATION';
                     label.style.cssText = 'background: rgba(0, 0, 0, 0.85); color: #00f2ff; font-size: 10px; padding: 5px 10px; border-radius: 6px; border: 1px solid #00f2ff; font-family: "Orbitron", sans-serif; white-space: nowrap; font-weight: bold; box-shadow: 0 4px 10px rgba(0,242,255,0.2); pointer-events: none; letter-spacing: 1px;';
 
-                    // 2. 🎯 Circular Button
+                    // 2. 🎯 Circle Button
                     const btn = L.DomUtil.create('button', '', wrapper);
-                    btn.title = 'MY Location';
+                    btn.title = 'Locate Me';
                     btn.innerHTML = '🎯';
-                    btn.style.cssText = 'background: #1e1e1e; color: #00f2ff; border: 2px solid #00f2ff; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: unset; padding: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.6); transition: 0.2s;';
-                    
+                    btn.style.cssText = 'background: #1e1e1e; color: #00f2ff; border: 2px solid #00f2ff; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.6); transition: 0.2s;';
+
                     L.DomEvent.disableClickPropagation(wrapper);
                     L.DomEvent.on(btn, 'click', function (e) {
-                        if (e) e.preventDefault();
+                        e.preventDefault();
                         showToast('📍 Fetching exact GPS...');
-                        
-                        navigator.geolocation.getCurrentPosition(
-                            function (pos) {
-                                const lat = pos.coords.latitude;
-                                const lng = pos.coords.longitude;
-                                map.flyTo([lat, lng], 16);
-                                
-                                const iconHtml = '<div class="you-are-here-icon"><div class="ring"></div><div class="dot"></div></div>';
-                                const youAreHereIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-                                L.marker([lat, lng], { icon: youAreHereIcon }).addTo(map).bindPopup('<b>📍 You are here</b>').openPopup();
-                                
-                                showToast('📍 Location found!');
-                            },
-                            function (err) {
-                                // Jar timeout zala tar low accuracy try karel
-                                if (err.code === 3) {
-                                    showToast('⚠️ GPS taking time, trying alternative...');
-                                    // Low accuracy fallback
-                                    navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoErrorFinal, { enableHighAccuracy: false, timeout: 10000 });
-                                } else if (err.code === 1) {
-                                    showToast('⚠️ Permission denied.');
-                                } else {
-                                    showToast('⚠️ GPS Error.');
-                                }
-                            },
-                            { 
-                                enableHighAccuracy: true, 
-                                timeout: 20000,   // ✅ 20 seconds kela
-                                maximumAge: 5000  // ✅ 5 sec junya location la allow kela jyamule instant disel
-                            }
-                        );
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                onGeoSuccess,
+                                onGeoErrorFinal,
+                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                            );
+                        }
                     });
+
                     return wrapper;
                 }
             });
@@ -923,7 +895,6 @@
         }
 
         // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam)
-        // ✅ NEW BOOK SLOT LOGIC (Auto-Nav & Anti-Spam & Mobile Popup Fix)
         async function initBooking(serviceType) {
             const plate = document.getElementById("plate").value.trim();
             const type = document.getElementById("type").value;
@@ -939,12 +910,6 @@
                 btn.style.cursor = 'not-allowed';
             });
 
-            // 🚀 MOBILE POPUP BLOCKER FIX: Open blank tab IMMEDIATELY
-            let mapTab = null;
-            if (window.selectedLotLat && window.selectedLotLng) {
-                mapTab = window.open('about:blank', '_blank');
-            }
-
             const res = await fetch("/api/book", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -953,15 +918,14 @@
                 })
             });
             const data = await safeJson(res);
-
             if (data && data.success) {
-                // 🗺️ AUTO NAVIGATION OPENING (Official Google Maps URL)
-                if (mapTab) {
-                    mapTab.location.href = `https://www.google.com/maps/dir/?api=1&destination=${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
+                // 🗺️ AUTO NAVIGATION OPENING
+                if (window.selectedLotLat && window.selectedLotLng) {
+                    const gmapUrl = `https://www.google.com/maps/dir/?api=1&destination=$${window.selectedLotLat},${window.selectedLotLng}&travelmode=driving`;
+                    window.open(gmapUrl, '_blank');
                 }
                 setTimeout(() => window.location.reload(), 1500);
             } else {
-                if (mapTab) mapTab.close();
                 alert("ERROR: " + (data ? data.message : "Failed"));
                 window.location.reload();
             }
