@@ -423,11 +423,19 @@ body.index-body {
 }
 
 /* ============================================================
-   SEARCH BAR
+   SEARCH BAR & WRAPPER
    ============================================================ */
-.search-bar {
+.search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
     width: 100%;
-    padding: 11px 16px;
+}
+
+.search-bar,
+.cyber-search {
+    width: 100%;
+    padding: 11px 16px 11px 45px !important; /* Force padding for icon */
     background: var(--surface-3);
     border: 1px solid var(--border);
     color: var(--text-main);
@@ -439,13 +447,27 @@ body.index-body {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-bar:focus {
+.search-bar:focus,
+.cyber-search:focus {
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px rgba(0, 212, 232, 0.12);
 }
 
-.search-bar::placeholder {
+.search-bar::placeholder,
+.cyber-search::placeholder {
     color: var(--text-muted);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.1rem;
+    color: var(--primary);
+    z-index: 5;
+    line-height: 1;
 }
 
 /* ============================================================

@@ -545,8 +545,11 @@
       <div class="section-header">
         <h2 class="section-title" style="color:#ffcc00; border-bottom-color:rgba(255,204,0,0.2);">INCOMING ARRIVALS
           (PENDING)</h2>
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
         <input type="text" id="search-arrivals" class="search-bar"
-          onkeyup="filterCards('search-arrivals', 'arrivals-list')" placeholder="🔍  Search by Vehicle ID..." />
+          onkeyup="filterCards('search-arrivals', 'arrivals-list')" placeholder="Search by Vehicle ID..." />
+      </div>
       </div>
       <div class="data-card-list" id="arrivals-list">
         {% set ns = namespace(has_pending=false) %}
@@ -585,8 +588,11 @@
       <div class="section-header">
         <h2 class="section-title" style="color:#ff2d6b; border-bottom-color:rgba(255,45,107,0.2);">PENDING OFFLINE
           PAYMENTS</h2>
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
         <input type="text" id="search-payments" class="search-bar"
-          onkeyup="filterCards('search-payments', 'payments-list')" placeholder="🔍  Search by Vehicle ID..." />
+          onkeyup="filterCards('search-payments', 'payments-list')" placeholder="Search by Vehicle ID..." />
+      </div>
       </div>
       <div class="data-card-list" id="payments-list">
         {% set ns2 = namespace(has_offline=false) %}
