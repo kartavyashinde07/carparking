@@ -502,104 +502,113 @@
             </div>
         </div>
 
-        <div class="panel">
-            <h2 style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-                MY LOGS
-                {% if session.role == 'partner' %}
-                <input type="text" id="user-log-search" placeholder="Search Vehicle ID..." class="section-search" style="margin-bottom: 0; width: 220px; font-size: 0.8rem; padding: 8px 12px; border-radius: 4px;">
-                {% endif %}
-            </h2>
-            <div id="logs-container">
-
-            {% if bookings %}
-            {% for booking in bookings|reverse %}
-            <div class="booking-item log-item {{ booking.status }}" data-vehicle="{{ booking.vehicle_id }}">
-                <div class="log-header" onclick="toggleDetails(this)">
-                    <div class="dc-title">Vehicle #{{ booking.vehicle_id }}</div>
-                    <span class="status-badge {{ booking.status }}">{{ booking.status | upper }}</span>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="panel">
+                <h2 style="padding-left: 15px; padding-top: 10px; margin-bottom: 10px;">NEAREST PARKING (< 5KM)</h2>
+                <div id="nearest-stations-list" style="padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">Fetching your location...</div>
                 </div>
+            </div>
 
-                <div class="booking-details {{ 'hidden' if booking.status not in ['pending', 'active', 'offline_pending'] else '' }}">
-                    <div class="dc-row" style="margin-bottom: 8px;">
-                        <span class="dc-label">Slot ID</span>
-                        <span class="dc-value">#{{ booking.slot_id }}</span>
-                    </div>
-                    <div class="dc-row" style="margin-bottom: 8px;">
-                        <span class="dc-label">Time In</span>
-                        <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</span>
-                    </div>
-                    {% if booking.status == 'completed' %}
-                    <div class="dc-row" style="margin-bottom: 8px;">
-                        <span class="dc-label">Amount</span>
-                        <span class="dc-value" style="color: var(--primary); font-weight: bold;">₹ {{ booking.total_price }}</span>
-                    </div>
+            <div class="panel">
+                <h2 style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                    MY LOGS
+                    {% if session.role == 'partner' %}
+                    <input type="text" id="user-log-search" placeholder="Search Vehicle ID..." class="section-search" style="margin-bottom: 0; width: 220px; font-size: 0.8rem; padding: 8px 12px; border-radius: 4px;">
                     {% endif %}
+                </h2>
+                <div id="logs-container">
 
-                    {% if booking.status == 'pending' %}
-                    {% set ns = namespace(lat=None, lng=None, name="") %}
-                    {% for s in slots %}
-                        {% if s.id == booking.slot_id %}
-                            {% set ns.lat = s.lat %}
-                            {% set ns.lng = s.lng %}
-                            {% set ns.name = s.slot_number %}
-                        {% endif %}
-                    {% endfor %}
-
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
-                        {% if ns.lat and ns.lng %}
-                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
-                            target="_blank" class="payment-btn"
-                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                            NAVIGATE</a>
-                        {% else %}
-                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
-                            target="_blank" class="payment-btn"
-                            style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
-                            NAVIGATE</a>
-                        {% endif %}
-                        <div style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 6px 12px; border-radius: 4px; font-size: 0.75rem;">
-                            ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
-                        </div>
-                        <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')" style="font-size: 0.75rem; padding: 6px 12px;">✖ CANCEL</button>
+                {% if bookings %}
+                {% for booking in bookings|reverse %}
+                <div class="booking-item log-item {{ booking.status }}" data-vehicle="{{ booking.vehicle_id }}">
+                    <div class="log-header" onclick="toggleDetails(this)">
+                        <div class="dc-title">Vehicle #{{ booking.vehicle_id }}</div>
+                        <span class="status-badge {{ booking.status }}">{{ booking.status | upper }}</span>
                     </div>
 
+                    <div class="booking-details {{ 'hidden' if booking.status not in ['pending', 'active', 'offline_pending'] else '' }}">
+                        <div class="dc-row" style="margin-bottom: 8px;">
+                            <span class="dc-label">Slot ID</span>
+                            <span class="dc-value">#{{ booking.slot_id }}</span>
+                        </div>
+                        <div class="dc-row" style="margin-bottom: 8px;">
+                            <span class="dc-label">Time In</span>
+                            <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</span>
+                        </div>
+                        {% if booking.status == 'completed' %}
+                        <div class="dc-row" style="margin-bottom: 8px;">
+                            <span class="dc-label">Amount</span>
+                            <span class="dc-value" style="color: var(--primary); font-weight: bold;">₹ {{ booking.total_price }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if booking.status == 'pending' %}
+                        {% set ns = namespace(lat=None, lng=None, name="") %}
+                        {% for s in slots %}
+                            {% if s.id == booking.slot_id %}
+                                {% set ns.lat = s.lat %}
+                                {% set ns.lng = s.lng %}
+                                {% set ns.name = s.slot_number %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                            {% if ns.lat and ns.lng %}
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.lat }},{{ ns.lng }}&travelmode=driving"
+                                target="_blank" class="payment-btn"
+                                style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                                NAVIGATE</a>
+                            {% else %}
+                            <a href="https://www.google.com/maps/dir/?api=1&destination={{ ns.name | urlencode }}+Parking&travelmode=driving"
+                                target="_blank" class="payment-btn"
+                                style="text-decoration:none; display:inline-block; border-color:#00f2ff; color:#00f2ff; font-size: 0.75rem; padding: 6px 12px; margin: 0; width: auto; font-family: 'Orbitron'; font-weight: bold;">🗺️
+                                NAVIGATE</a>
+                            {% endif %}
+                            <div style="color: var(--accent); font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--accent); padding: 6px 12px; border-radius: 4px; font-size: 0.75rem;">
+                                ⏳ <span id="pending-timer-{{ booking.id }}">--:--</span>
+                            </div>
+                            <button class="end-btn" onclick="cancelBooking('{{ booking.id }}')" style="font-size: 0.75rem; padding: 6px 12px;">✖ CANCEL</button>
+                        </div>
+
+                        <script>
+                            window.pendingBookingTimers = window.pendingBookingTimers || [];
+                            window.pendingBookingTimers.push({
+                                id: "{{ booking.id }}",
+                                remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
+                            });
+                        </script>
+                        {% endif %}
+
+                        {% if booking.status == 'active' %}
+                        <button class="end-btn" onclick="endBooking('{{ booking.id }}', '{{ booking.vehicle_id }}')" style="margin-top: 15px; width: 100%;">END SESSION</button>
+                        {% endif %}
+
+                        <div class="details-actions" style="margin-top: 15px;">
+                            {% if booking.status == 'completed' %}
+                                <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if booking.status == 'offline_pending' %}
                     <script>
-                        window.pendingBookingTimers = window.pendingBookingTimers || [];
-                        window.pendingBookingTimers.push({
+                        window.pendingOfflineBooking = {
                             id: "{{ booking.id }}",
-                            remaining: Number("{{ booking.remaining_pending_seconds | default(1800, true) }}")
-                        });
+                            vehicle_id: "{{ booking.vehicle_id }}",
+                            remaining: Number("{{ booking.remaining_offline_seconds }}"),
+                            amount: Number("{{ booking.total_price }}")
+                        };
                     </script>
                     {% endif %}
-
-                    {% if booking.status == 'active' %}
-                    <button class="end-btn" onclick="endBooking('{{ booking.id }}', '{{ booking.vehicle_id }}')" style="margin-top: 15px; width: 100%;">END SESSION</button>
-                    {% endif %}
-
-                    <div class="details-actions" style="margin-top: 15px;">
-                        {% if booking.status == 'completed' %}
-                            <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
-                        {% endif %}
-                    </div>
                 </div>
-
-                {% if booking.status == 'offline_pending' %}
-                <script>
-                    window.pendingOfflineBooking = {
-                        id: "{{ booking.id }}",
-                        vehicle_id: "{{ booking.vehicle_id }}",
-                        remaining: Number("{{ booking.remaining_offline_seconds }}"),
-                        amount: Number("{{ booking.total_price }}")
-                    };
-                </script>
+                {% endfor %}
+                {% else %}
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">
+                    No booking records found in the system.
+                </div>
                 {% endif %}
-            </div>
-            {% endfor %}
-            {% else %}
-            <div style="color: var(--text-muted); text-align: center; padding: 20px;">
-                No booking records found in the system.
-            </div>
-            {% endif %}
+                </div>
             </div>
         </div>
 
@@ -634,11 +643,7 @@
 
             <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; padding: 0 15px;">
                 <button class="payment-btn" onclick="initBooking('self')"
-                    style="border-color: #00ff88; color: #00ff88; width: 45%;">🚗 SELF
-                    PARK<br><small>₹50/hour</small></button>
-                <button class="payment-btn" onclick="initBooking('valet')"
-                    style="border-color: #ffcc00; color: #ffcc00; width: 45%;">🤵 CALL
-                    VALET<br><small>₹150/hour</small></button>
+                    style="border-color: #00ff88; color: #00ff88; width: 100%;">🚗 CONFIRM & NAVIGATE<br><small>₹50/hour</small></button>
             </div>
             <button class="end-btn" style="margin-top: 15px; width: 90%;"
                 onclick="document.getElementById('parking-modal').classList.add('hidden')">CANCEL</button>
@@ -884,13 +889,68 @@
 
                         const slotEls = Array.from(document.querySelectorAll('.slot-data-item'));
                         let nearestLatLng = null; let minDist = Infinity;
+                        const lotsMap2 = {};
+
                         slotEls.forEach(function (el) {
                             const lat = parseFloat(el.dataset.lat); const lng = parseFloat(el.dataset.lng);
                             if (isNaN(lat) || isNaN(lng)) return;
+                            
+                            const key = lat.toFixed(5) + '_' + lng.toFixed(5);
+                            if (!lotsMap2[key]) {
+                                lotsMap2[key] = { lat: lat, lng: lng, name: el.dataset.name, available: 0 };
+                            }
+                            if (el.dataset.occupied !== 'true') lotsMap2[key].available++;
+
                             const slotLatLng = L.latLng(lat, lng);
                             const dist = map.distance(userLatLng, slotLatLng);
                             if (dist < minDist) { minDist = dist; nearestLatLng = slotLatLng; }
                         });
+
+                        const nearestListEl = document.getElementById('nearest-stations-list');
+                        if (nearestListEl) {
+                            nearestListEl.innerHTML = '';
+                            let added = 0;
+                            Object.values(lotsMap2).forEach(lot => {
+                                const lotLatLng = L.latLng(lot.lat, lot.lng);
+                                const dist = map.distance(userLatLng, lotLatLng);
+                                if (dist <= 5000) {
+                                    added++;
+                                    const distKm = (dist / 1000).toFixed(1);
+                                    const div = document.createElement('div');
+                                    div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;';
+                                    div.onmouseover = () => div.style.background = 'rgba(255,255,255,0.1)';
+                                    div.onmouseout = () => div.style.background = 'rgba(255,255,255,0.05)';
+                                    div.innerHTML = `
+                                        <div>
+                                            <div style="color: #fff; font-weight: bold; font-family: 'Orbitron';">${lot.name}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-muted);">${distKm} km away</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="color: ${lot.available > 0 ? '#00f2ff' : '#ff0055'}; font-weight: bold; font-size: 0.9rem;">
+                                                ${lot.available > 0 ? lot.available + ' Slot(s)' : 'Full'}
+                                            </div>
+                                        </div>
+                                    `;
+                                    div.onclick = () => {
+                                        window.selectedLotName = lot.name;
+                                        window.selectedLotLat = lot.lat;
+                                        window.selectedLotLng = lot.lng;
+                                        document.getElementById('selected-slot-id').innerText = lot.name + ' (' + lot.available + ' free)';
+                                        document.getElementById('parking-modal').classList.remove('hidden');
+                                        const gmapsBtn = document.getElementById('gmaps-btn');
+                                        if (gmapsBtn) {
+                                            gmapsBtn.onclick = () => {
+                                                window.open(`https://www.google.com/maps/dir/?api=1&destination=${lot.lat},${lot.lng}&travelmode=driving`, '_blank');
+                                            };
+                                        }
+                                    };
+                                    nearestListEl.appendChild(div);
+                                }
+                            });
+                            if (added === 0) {
+                                nearestListEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; padding: 10px; text-align: center;">No stations found within 5km.</div>';
+                            }
+                        }
 
                         if (nearestLatLng && minDist < 8000) {
                             map.flyToBounds(L.latLngBounds(userLatLng, nearestLatLng), { padding: [50, 50], maxZoom: 16 });

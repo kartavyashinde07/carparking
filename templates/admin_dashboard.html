@@ -5,13 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin System | LUXURY PARKING</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+
     <style>
         /* --- THEME MATCHING (Page Specific Overrides) --- */
         :root {
@@ -92,7 +94,7 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         .stat-value {
@@ -117,7 +119,7 @@
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         table {
@@ -126,7 +128,8 @@
             white-space: nowrap;
         }
 
-        th, td {
+        th,
+        td {
             text-align: left;
             padding: 15px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -153,10 +156,27 @@
             letter-spacing: 1px;
         }
 
-        .badge-occupied { background: rgba(255, 0, 85, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-        .badge-free { background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); }
-        .badge-active { background: rgba(0, 242, 255, 0.1); color: var(--primary); }
-        .badge-completed { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+        .badge-occupied {
+            background: rgba(255, 0, 85, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .badge-free {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .badge-active {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-completed {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
 
         /* --- ADD FORM & BUTTONS --- */
         .add-form {
@@ -169,7 +189,9 @@
             gap: 15px;
             align-items: center;
         }
-        .add-form input, .add-form select {
+
+        .add-form input,
+        .add-form select {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #444;
             color: #fff;
@@ -178,6 +200,7 @@
             font-family: 'Rajdhani', sans-serif;
             font-size: 1rem;
         }
+
         .add-form button {
             background: rgba(0, 242, 255, 0.1);
             color: var(--primary);
@@ -188,6 +211,7 @@
             border-radius: 4px;
             transition: 0.3s;
         }
+
         .add-form button:hover {
             background: var(--primary);
             color: black;
@@ -309,12 +333,14 @@
         .user-row.hidden-row {
             display: none !important;
         }
+
         .view-more-container {
             text-align: center;
             padding: 10px 0;
             background: rgba(0, 242, 255, 0.02);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
+
         .btn-view-more {
             background: transparent;
             border: 1px solid var(--primary);
@@ -327,11 +353,29 @@
             transition: 0.3s;
             letter-spacing: 1px;
         }
-        /* --- FORCE FIX: Search Bar Overlap --- */
-        .search-wrapper { position: relative; display: inline-block; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none; font-size: 1.1rem; }
-        .cyber-search, .section-search { padding-left: 40px !important; position: relative; z-index: 5; }
 
+        /* --- FORCE FIX: Search Bar Overlap --- */
+        .search-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            pointer-events: none;
+            font-size: 1.1rem;
+        }
+
+        .cyber-search,
+        .section-search {
+            padding-left: 40px !important;
+            position: relative;
+            z-index: 5;
+        }
     </style>
 </head>
 
@@ -374,9 +418,11 @@
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
         <h2 style="border: none; margin: 0; padding: 0;">YOUR OWN PARKING</h2>
-        <button class="btn-primary" style="width: auto; margin-top: 0; padding: 8px 15px;" onclick="openParkingModal()">+ ADD PARKING</button>
+        <button class="btn-primary" style="width: auto; margin-top: 0; padding: 8px 15px;"
+            onclick="openParkingModal()">+ ADD PARKING</button>
     </div>
 
     <!-- Modal for adding parking -->
@@ -385,42 +431,50 @@
             <button class="close-btn" onclick="closeParkingModal()">&times;</button>
             <div class="modal-body">
                 <div class="form-section">
-                     <h3 style="color: var(--primary); font-family: 'Orbitron'; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">Parking Details</h3>
-                     <form action="/admin/add_slot" method="POST">
-                          <div class="form-group">
-                              <label>Location Name</label>
-                              <div style="display: flex; gap: 10px;">
-                                  <input type="text" id="location-name-input" name="slot_number" placeholder="e.g. Downtown Plaza" required style="flex-grow: 1;">
-                                  <button type="button" class="btn-primary" onclick="searchLocation()" style="width: auto; margin-top: 0; padding: 0 15px;" title="Find on Map">🔍</button>
-                              </div>
-                          </div>
-                          
-                          <div class="form-group">
-                              <label>Vehicle Type</label>
-                              <select name="type">
-                                  <option value="4-wheeler">4-Wheeler (Car)</option>
-                                  <option value="2-wheeler">2-Wheeler (Bike)</option>
-                                  <option value="both">Both (2W & 4W)</option>
-                              </select>
-                          </div>
+                    <h3
+                        style="color: var(--primary); font-family: 'Orbitron'; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                        Parking Details</h3>
+                    <form action="/admin/add_slot" method="POST">
+                        <div class="form-group">
+                            <label>Location Name</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="location-name-input" name="slot_number"
+                                    placeholder="e.g. Downtown Plaza" required style="flex-grow: 1;">
+                                <button type="button" class="btn-primary" onclick="searchLocation()"
+                                    style="width: auto; margin-top: 0; padding: 0 15px;" title="Find on Map">🔍</button>
+                            </div>
+                        </div>
 
-                          <div class="form-group">
-                              <label>Capacity (Slots)</label>
-                              <input type="number" name="capacity" placeholder="e.g. 5" required min="1">
-                          </div>
+                        <div class="form-group">
+                            <label>Vehicle Type</label>
+                            <select name="type">
+                                <option value="4-wheeler">4-Wheeler (Car)</option>
+                                <option value="2-wheeler">2-Wheeler (Bike)</option>
+                                <option value="both">Both (2W & 4W)</option>
+                            </select>
+                        </div>
 
-                          <!-- Hidden fields populated by Map Click -->
-                          <input type="hidden" name="lat" id="form-lat">
-                          <input type="hidden" name="lng" id="form-lng">
-                          
-                          <p id="coord-status" style="color: var(--text-muted); font-size: 0.85rem; margin-top: -10px;">Status: Please select a location on the map.</p>
+                        <div class="form-group">
+                            <label>Capacity (Slots)</label>
+                            <input type="number" name="capacity" placeholder="e.g. 5" required min="1">
+                        </div>
 
-                          <button type="submit" class="btn-primary" id="submit-btn" disabled>VERIFY & SUBMIT PARKING</button>
-                     </form>
+                        <!-- Hidden fields populated by Map Click -->
+                        <input type="hidden" name="lat" id="form-lat">
+                        <input type="hidden" name="lng" id="form-lng">
+
+                        <p id="coord-status" style="color: var(--text-muted); font-size: 0.85rem; margin-top: -10px;">
+                            Status: Please select a location on the map.</p>
+
+                        <button type="submit" class="btn-primary" id="submit-btn" disabled>VERIFY & SUBMIT
+                            PARKING</button>
+                    </form>
                 </div>
                 <div class="map-section">
-                      <h3 style="color: var(--primary); font-family: 'Orbitron'; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">Select from Map</h3>
-                      <div id="admin-map"></div>
+                    <h3
+                        style="color: var(--primary); font-family: 'Orbitron'; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                        Select from Map</h3>
+                    <div id="admin-map"></div>
                 </div>
             </div>
         </div>
@@ -438,21 +492,30 @@
             </thead>
             {% for app in applications %}
             <tbody>
-                <tr style="cursor: pointer; background: rgba(0, 242, 255, 0.05); transition: background 0.3s;" onmouseover="this.style.background='rgba(0, 242, 255, 0.1)'" onmouseout="this.style.background='rgba(0, 242, 255, 0.05)'" data-app-id="{{ loop.index }}" data-lat="{{ app.lat or '' }}" data-lng="{{ app.lng or '' }}" onclick="toggleAppRow(this)">
-                    <td style="font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
+                <tr style="cursor: pointer; background: rgba(0, 242, 255, 0.05); transition: background 0.3s;"
+                    onmouseover="this.style.background='rgba(0, 242, 255, 0.1)'"
+                    onmouseout="this.style.background='rgba(0, 242, 255, 0.05)'" data-app-id="{{ loop.index }}"
+                    data-lat="{{ app.lat or '' }}" data-lng="{{ app.lng or '' }}" onclick="toggleAppRow(this)">
+                    <td
+                        style="font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
                         ▼ {{ app.location_name }}
                     </td>
                     <td>
-                        <span class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
+                        <span
+                            class="badge {{ 'badge-active' if app.status == 'approved' else ('badge-occupied' if app.status == 'rejected' else 'badge-completed') }}">
                             {{ app.status | upper }}
                         </span>
                     </td>
                     <td style="text-align: right;" onclick="event.stopPropagation();">
                         {% if app.status == 'pending' %}
-                            <a href="/admin/approve_application/{{ app.id }}" style="padding: 5px 10px; font-size: 0.8rem; border: 1px solid #00ff88; color: #00ff88; background: rgba(0,255,136,0.1); text-decoration: none; border-radius: 4px;">✔ APPROVE</a>
-                            <a href="/admin/reject_application/{{ app.id }}" style="padding: 5px 10px; font-size: 0.8rem; border: 1px solid var(--accent); color: var(--accent); background: rgba(255,0,85,0.1); margin-left: 5px; text-decoration: none; border-radius: 4px;">✖ REJECT</a>
+                        <a href="/admin/approve_application/{{ app.id }}"
+                            style="padding: 5px 10px; font-size: 0.8rem; border: 1px solid #00ff88; color: #00ff88; background: rgba(0,255,136,0.1); text-decoration: none; border-radius: 4px;">✔
+                            APPROVE</a>
+                        <a href="/admin/reject_application/{{ app.id }}"
+                            style="padding: 5px 10px; font-size: 0.8rem; border: 1px solid var(--accent); color: var(--accent); background: rgba(255,0,85,0.1); margin-left: 5px; text-decoration: none; border-radius: 4px;">✖
+                            REJECT</a>
                         {% else %}
-                            <span style="color: #444;">PROCESSED</span>
+                        <span style="color: #444;">PROCESSED</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -462,21 +525,38 @@
                     <td colspan="3" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 300px;">
-                                <h4 style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">APPLICATION DETAILS</h4>
-                                <p><strong style="color: #888;">Partner ID:</strong> <span style="color: white;">#{{ app.partner_id }}</span></p>
-                                <p><strong style="color: #888;">Vehicle Type:</strong> <span style="color: white;">{{ app.type | upper }}</span></p>
-                                <p><strong style="color: #888;">Total Capacity:</strong> <span style="color: var(--primary); font-size: 1.2rem; font-weight: bold;">{{ app.capacity }} Slots</span></p>
-                                <p><strong style="color: #888;">Coordinates:</strong> <span style="color: white;">{{ app.lat }}, {{ app.lng }}</span></p>
-                                <p><strong style="color: #888;">Submitted On:</strong> <span style="color: white;">{{ app.created_at.strftime('%Y-%m-%d %H:%M') if app.created_at else 'N/A' }}</span></p>
-                                
+                                <h4
+                                    style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                                    APPLICATION DETAILS</h4>
+                                <p><strong style="color: #888;">Partner ID:</strong> <span style="color: white;">#{{
+                                        app.partner_id }}</span></p>
+                                <p><strong style="color: #888;">Vehicle Type:</strong> <span style="color: white;">{{
+                                        app.type | upper }}</span></p>
+                                <p><strong style="color: #888;">Total Capacity:</strong> <span
+                                        style="color: var(--primary); font-size: 1.2rem; font-weight: bold;">{{
+                                        app.capacity }} Slots</span></p>
+                                <p><strong style="color: #888;">Coordinates:</strong> <span style="color: white;">{{
+                                        app.lat }}, {{ app.lng }}</span></p>
+                                <p><strong style="color: #888;">Submitted On:</strong> <span style="color: white;">{{
+                                        app.created_at.strftime('%Y-%m-%d %H:%M') if app.created_at else 'N/A' }}</span>
+                                </p>
+
                                 <div style="margin-top: 20px;">
-                                    <a href="{{ app.photo_url }}" target="_blank" style="display: inline-block; padding: 10px 20px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,242,255,0.05); text-decoration: none; border-radius: 4px; margin-right: 10px; font-family: 'Orbitron';">📷 VIEW LAND PHOTO</a> 
-                                    <a href="{{ app.doc_url }}" target="_blank" style="display: inline-block; padding: 10px 20px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,242,255,0.05); text-decoration: none; border-radius: 4px; font-family: 'Orbitron';">📄 VIEW LEGAL DOC</a>
+                                    <a href="{{ app.photo_url }}" target="_blank"
+                                        style="display: inline-block; padding: 10px 20px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,242,255,0.05); text-decoration: none; border-radius: 4px; margin-right: 10px; font-family: 'Orbitron';">📷
+                                        VIEW LAND PHOTO</a>
+                                    <a href="{{ app.doc_url }}" target="_blank"
+                                        style="display: inline-block; padding: 10px 20px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,242,255,0.05); text-decoration: none; border-radius: 4px; font-family: 'Orbitron';">📄
+                                        VIEW LEGAL DOC</a>
                                 </div>
                             </div>
                             <div style="flex: 1; min-width: 300px;">
-                                <h4 style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">LOCATION PREVIEW</h4>
-                                <div id="inline-map-{{ loop.index }}" style="height: 250px; width: 100%; border: 1px solid #444; border-radius: 8px; background: #111;"></div>
+                                <h4
+                                    style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                                    LOCATION PREVIEW</h4>
+                                <div id="inline-map-{{ loop.index }}"
+                                    style="height: 250px; width: 100%; border: 1px solid #444; border-radius: 8px; background: #111;">
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -485,7 +565,10 @@
             {% endfor %}
             {% if not applications %}
             <tbody>
-                <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 40px;">No pending partner applications.</td></tr>
+                <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 40px;">No pending
+                        partner applications.</td>
+                </tr>
             </tbody>
             {% endif %}
         </table>
@@ -504,20 +587,29 @@
             </thead>
             {% for group in grouped_slots %}
             <tbody>
-                <tr class="group-row" style="cursor: pointer; background: rgba(0, 242, 255, 0.05); transition: background 0.3s;" onmouseover="this.style.background='rgba(0, 242, 255, 0.1)'" onmouseout="this.style.background='rgba(0, 242, 255, 0.05)'" data-group-id="{{ loop.index }}" data-lat="{{ group.lat or '' }}" data-lng="{{ group.lng or '' }}" onclick="toggleSlotRow(this)">
-                    <td style="font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
+                <tr class="group-row"
+                    style="cursor: pointer; background: rgba(0, 242, 255, 0.05); transition: background 0.3s;"
+                    onmouseover="this.style.background='rgba(0, 242, 255, 0.1)'"
+                    onmouseout="this.style.background='rgba(0, 242, 255, 0.05)'" data-group-id="{{ loop.index }}"
+                    data-lat="{{ group.lat or '' }}" data-lng="{{ group.lng or '' }}" onclick="toggleSlotRow(this)">
+                    <td
+                        style="font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
                         ▼ {{ group.location_name }}
                     </td>
                     <td>{{ group.type | upper }}</td>
                     <td>
-                        <span class="badge {{ 'badge-free' if group.available > 0 else 'badge-occupied' }}">{{ group.available }} / {{ group.total }} FREE</span>
+                        <span class="badge {{ 'badge-free' if group.available > 0 else 'badge-occupied' }}">{{
+                            group.available }} / {{ group.total }} FREE</span>
                     </td>
                     <td style="text-align: right;" onclick="event.stopPropagation();">
-                        <form action="/admin/delete_location" method="post" style="display:inline;" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this parking location? Active bookings will remain valid but the location will disappear for new bookers.');">
+                        <form action="/admin/delete_location" method="post" style="display:inline;"
+                            onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this parking location? Active bookings will remain valid but the location will disappear for new bookers.');">
                             <input type="hidden" name="location_name" value="{{ group.location_name }}">
                             <input type="hidden" name="lat" value="{{ group.lat }}">
                             <input type="hidden" name="lng" value="{{ group.lng }}">
-                            <button type="submit" style="background: rgba(255,0,85,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️ REMOVE</button>
+                            <button type="submit"
+                                style="background: rgba(255,0,85,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️
+                                REMOVE</button>
                         </form>
                     </td>
                 </tr>
@@ -527,20 +619,34 @@
                     <td colspan="4" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
                             <div style="flex: 1; min-width: 300px;">
-                                <h4 style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">PARKING LOCATION INFO</h4>
-                                <p><strong style="color: #888;">Owner / Partner:</strong> <span style="color: white; font-weight: bold;">{{ group.partner }}</span></p>
-                                <p><strong style="color: #888;">Full Address:</strong> <span style="color: white;">{{ group.full_address }}</span></p>
-                                <p><strong style="color: #888;">Vehicle Type:</strong> <span style="color: white;">{{ group.type | upper }}</span></p>
-                                <p><strong style="color: #888;">Total Capacity:</strong> <span style="color: var(--primary); font-size: 1.2rem; font-weight: bold;">{{ group.total }} Slots</span></p>
-                                <p><strong style="color: #888;">Coordinates:</strong> <span style="color: white;">{{ group.lat }}, {{ group.lng }}</span></p>
+                                <h4
+                                    style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                                    PARKING LOCATION INFO</h4>
+                                <p><strong style="color: #888;">Owner / Partner:</strong> <span
+                                        style="color: white; font-weight: bold;">{{ group.partner }}</span></p>
+                                <p><strong style="color: #888;">Full Address:</strong> <span style="color: white;">{{
+                                        group.full_address }}</span></p>
+                                <p><strong style="color: #888;">Vehicle Type:</strong> <span style="color: white;">{{
+                                        group.type | upper }}</span></p>
+                                <p><strong style="color: #888;">Total Capacity:</strong> <span
+                                        style="color: var(--primary); font-size: 1.2rem; font-weight: bold;">{{
+                                        group.total }} Slots</span></p>
+                                <p><strong style="color: #888;">Coordinates:</strong> <span style="color: white;">{{
+                                        group.lat }}, {{ group.lng }}</span></p>
                             </div>
                             <div style="flex: 1; min-width: 300px;">
-                                <h4 style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">LOCATION MAP</h4>
-                                <div id="group-map-{{ loop.index }}" style="height: 200px; width: 100%; border: 1px solid #444; border-radius: 8px; background: #111;"></div>
+                                <h4
+                                    style="color: var(--primary); margin-top: 0; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                                    LOCATION MAP</h4>
+                                <div id="group-map-{{ loop.index }}"
+                                    style="height: 200px; width: 100%; border: 1px solid #444; border-radius: 8px; background: #111;">
+                                </div>
                             </div>
                         </div>
-                        
-                        <h4 style="color: var(--primary); margin-top: 20px; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">INDIVIDUAL SLOTS</h4>
+
+                        <h4
+                            style="color: var(--primary); margin-top: 20px; font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                            INDIVIDUAL SLOTS</h4>
                         <table style="width: 100%; border: none;">
                             <thead style="background: transparent;">
                                 <tr>
@@ -554,21 +660,25 @@
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
                                     <td style="padding-left: 40px; color: var(--text-main);">#{{ slot.id }}</td>
                                     <td>
-                                        <span class="badge {{ 'badge-occupied' if slot.is_occupied else 'badge-free' }}">
+                                        <span
+                                            class="badge {{ 'badge-occupied' if slot.is_occupied else 'badge-free' }}">
                                             {{ 'OCCUPIED' if slot.is_occupied else 'AVAILABLE' }}
                                         </span>
                                     </td>
                                     <td>
-                                        {% set active_booking = bookings | selectattr("slot_id", "equalto", slot.id) | selectattr("status", "equalto", "active") | list %}
-                                        
+                                        {% set active_booking = bookings | selectattr("slot_id", "equalto", slot.id) |
+                                        selectattr("status", "equalto", "active") | list %}
+
                                         {% if active_booking %}
-                                            {% set current = active_booking[0] %}
-                                            {% set b_user = users | selectattr("id", "equalto", current.user_id) | list | first %}
-                                            <span style="color: var(--primary);">User:</span> {{ b_user.name if b_user else 'Unknown' }} 
-                                            <span style="color: #666;">|</span> 
-                                            <span style="color: var(--primary);">Vehicle ID:</span> {{ current.vehicle_id }}
+                                        {% set current = active_booking[0] %}
+                                        {% set b_user = users | selectattr("id", "equalto", current.user_id) | list |
+                                        first %}
+                                        <span style="color: var(--primary);">User:</span> {{ b_user.name if b_user else
+                                        'Unknown' }}
+                                        <span style="color: #666;">|</span>
+                                        <span style="color: var(--primary);">Vehicle ID:</span> {{ current.vehicle_id }}
                                         {% else %}
-                                            <span style="color: #444;">- - -</span>
+                                        <span style="color: #444;">- - -</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -581,17 +691,23 @@
             {% endfor %}
             {% if not grouped_slots %}
             <tbody>
-                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 20px;">No physical parking slots exist yet.</td></tr>
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 20px;">No physical
+                        parking slots exist yet.</td>
+                </tr>
             </tbody>
             {% endif %}
         </table>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
         <h2 style="color: #ffcc00; border-left-color: #ffcc00; margin-bottom: 0;">INCOMING ARRIVALS (PENDING)</h2>
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-admin-arrivals" class="cyber-search" onkeyup="filterTable('search-admin-arrivals', 'table-admin-arrivals')" placeholder="Search by Vehicle ID...">
+            <input type="text" id="search-admin-arrivals" class="cyber-search"
+                onkeyup="filterTable('search-admin-arrivals', 'table-admin-arrivals')"
+                placeholder="Search by Vehicle ID...">
         </div>
     </div>
     <div class="table-container" style="margin-bottom: 40px;">
@@ -609,32 +725,42 @@
             <tbody>
                 {% set ns_pending = namespace(has_pending=false) %}
                 {% for booking in bookings %}
-                    {% if booking.status == 'pending' %}
-                    {% set ns_pending.has_pending = true %}
-                    <tr style="background: rgba(255, 204, 0, 0.05);">
-                        <td style="color: var(--text-muted);">#{{ booking.id }}</td>
-                        <td style="font-weight: bold;">{{ booking.vehicle_id }}</td>
-                        <td>{{ booking.service_type | upper }}</td>
-                        <td>{{ (booking.payment_mode or 'N/A') | upper }}</td>
-                        <td style="color: #ffcc00; font-weight: bold;">WAITING ARRIVAL</td>
-                        <td>
-                            <button onclick="confirmArrival('{{ booking.id }}')" style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; color: #00ff88; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; transition: 0.3s;" onmouseover="this.style.background='#00ff88'; this.style.color='#000';" onmouseout="this.style.background='rgba(0, 255, 136, 0.1)'; this.style.color='#00ff88';">✅ CONFIRM</button>
-                        </td>
-                    </tr>
-                    {% endif %}
+                {% if booking.status == 'pending' %}
+                {% set ns_pending.has_pending = true %}
+                <tr style="background: rgba(255, 204, 0, 0.05);">
+                    <td style="color: var(--text-muted);">#{{ booking.id }}</td>
+                    <td style="font-weight: bold;">{{ booking.vehicle_id }}</td>
+                    <td>{{ booking.service_type | upper }}</td>
+                    <td>{{ (booking.payment_mode or 'N/A') | upper }}</td>
+                    <td style="color: #ffcc00; font-weight: bold;">WAITING ARRIVAL</td>
+                    <td>
+                        <button onclick="confirmArrival('{{ booking.id }}')"
+                            style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; color: #00ff88; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; transition: 0.3s;"
+                            onmouseover="this.style.background='#00ff88'; this.style.color='#000';"
+                            onmouseout="this.style.background='rgba(0, 255, 136, 0.1)'; this.style.color='#00ff88';">✅
+                            CONFIRM</button>
+                    </td>
+                </tr>
+                {% endif %}
                 {% endfor %}
                 {% if not ns_pending.has_pending %}
-                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No pending arrivals currently.</td></tr>
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No pending
+                        arrivals currently.</td>
+                </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
         <h2 style="color: #ff0055; border-left-color: #ff0055; margin-bottom: 0;">PENDING OFFLINE PAYMENTS</h2>
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-admin-payments" class="cyber-search" onkeyup="filterTable('search-admin-payments', 'table-admin-payments')" placeholder="Search by Vehicle ID...">
+            <input type="text" id="search-admin-payments" class="cyber-search"
+                onkeyup="filterTable('search-admin-payments', 'table-admin-payments')"
+                placeholder="Search by Vehicle ID...">
         </div>
     </div>
     <div class="table-container" style="margin-bottom: 40px;">
@@ -651,31 +777,40 @@
             <tbody>
                 {% set ns_offline = namespace(has_offline=false) %}
                 {% for booking in bookings %}
-                    {% if booking.status == 'offline_pending' %}
-                    {% set ns_offline.has_offline = true %}
-                    <tr style="background: rgba(255, 0, 85, 0.05);">
-                        <td style="color: var(--text-muted);">#{{ booking.id }}</td>
-                        <td style="font-weight: bold; color: white;">#{{ booking.vehicle_id }}</td>
-                        <td style="color: #ffcc00; font-weight: bold; font-size: 1.2rem;">₹{{ booking.total_price }}</td>
-                        <td>{{ (booking.type or 'CASH') | upper }}</td>
-                        <td>
-                            <button onclick="confirmOfflinePayment('{{ booking.id }}')" style="background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff88; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; transition: 0.3s;" onmouseover="this.style.background='#00ff88'; this.style.color='#000';" onmouseout="this.style.background='rgba(0, 255, 136, 0.1)'; this.style.color='#00ff88';">✅ PAYMENT RECEIVED</button>
-                        </td>
-                    </tr>
-                    {% endif %}
+                {% if booking.status == 'offline_pending' %}
+                {% set ns_offline.has_offline = true %}
+                <tr style="background: rgba(255, 0, 85, 0.05);">
+                    <td style="color: var(--text-muted);">#{{ booking.id }}</td>
+                    <td style="font-weight: bold; color: white;">#{{ booking.vehicle_id }}</td>
+                    <td style="color: #ffcc00; font-weight: bold; font-size: 1.2rem;">₹{{ booking.total_price }}</td>
+                    <td>{{ (booking.type or 'CASH') | upper }}</td>
+                    <td>
+                        <button onclick="confirmOfflinePayment('{{ booking.id }}')"
+                            style="background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff88; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; transition: 0.3s;"
+                            onmouseover="this.style.background='#00ff88'; this.style.color='#000';"
+                            onmouseout="this.style.background='rgba(0, 255, 136, 0.1)'; this.style.color='#00ff88';">✅
+                            PAYMENT RECEIVED</button>
+                    </td>
+                </tr>
+                {% endif %}
                 {% endfor %}
                 {% if not ns_offline.has_offline %}
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No customers waiting to pay.</td></tr>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No customers
+                        waiting to pay.</td>
+                </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
         <h2 style="margin-bottom: 0;">RECENT BOOKINGS</h2>
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" id="admin-log-search" placeholder="Search by Vehicle ID..." class="section-search" style="margin-bottom: 0; width: 250px;">
+            <input type="text" id="admin-log-search" placeholder="Search by Vehicle ID..." class="section-search"
+                style="margin-bottom: 0; width: 250px;">
         </div>
     </div>
     <div class="data-card-list" id="admin-logs-list" style="margin-bottom: 40px;">
@@ -699,12 +834,16 @@
                 </div>
                 <div class="dc-row">
                     <span class="dc-label">Time In</span>
-                    <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else 'N/A' }}</span>
+                    <span class="dc-value">{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else
+                        'N/A' }}</span>
                 </div>
                 <div class="details-actions">
-                    <button class="payment-btn" onclick="viewCustomerInfo('{{ booking.user_id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">👤 SEE CUSTOMER INFO</button>
+                    <button class="payment-btn" onclick="viewCustomerInfo('{{ booking.user_id }}')"
+                        style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">👤 SEE CUSTOMER
+                        INFO</button>
                     {% if booking.status == 'completed' %}
-                        <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')" style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
+                    <button class="payment-btn" onclick="viewReceipt('{{ booking.id }}')"
+                        style="width: auto; padding: 8px 15px; font-size: 0.8rem; margin: 0;">🧾 SEE RECEIPT</button>
                     {% endif %}
                 </div>
             </div>
@@ -715,11 +854,13 @@
         {% endif %}
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; align-items: flex-end;">
         <h2 style="margin-bottom: 0;">REGISTERED USERS</h2>
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" id="admin-user-search" placeholder="Search by Name/Email..." class="section-search" style="margin-bottom: 0; width: 250px;">
+            <input type="text" id="admin-user-search" placeholder="Search by Name/Email..." class="section-search"
+                style="margin-bottom: 0; width: 250px;">
         </div>
     </div>
     <div class="data-card-list" id="admin-users-list">
@@ -727,7 +868,8 @@
         <div class="data-card user-card-item" data-search="{{ user.name }} {{ user.email }}">
             <div class="log-header" onclick="toggleDetails(this)">
                 <div class="dc-title">{{ user.name }}</div>
-                <span style="color: {{ '#00ff88' if user.is_active else '#ff0055' }}; font-weight: bold; font-size: 0.8rem;">
+                <span
+                    style="color: {{ '#00ff88' if user.is_active else '#ff0055' }}; font-weight: bold; font-size: 0.8rem;">
                     {{ 'ACTIVE' if user.is_active else 'BLOCKED' }}
                 </span>
             </div>
@@ -742,17 +884,21 @@
                 </div>
                 <div class="dc-row">
                     <span class="dc-label">Role</span>
-                    <span class="dc-value" style="color: {{ 'var(--accent)' if user.role == 'admin' else 'inherit' }}; font-weight: bold;">{{ user.role | upper }}</span>
+                    <span class="dc-value"
+                        style="color: {{ 'var(--accent)' if user.role == 'admin' else 'inherit' }}; font-weight: bold;">{{
+                        user.role | upper }}</span>
                 </div>
                 <div class="details-actions">
                     {% if user.role != 'admin' %}
-                        {% if user.is_active %}
-                            <a href="/admin/toggle-block/{{ user.id }}" class="btn-block" style="text-decoration: none;">BLOCK USER</a>
-                        {% else %}
-                            <a href="/admin/toggle-block/{{ user.id }}" class="btn-verify" style="text-decoration: none; border-color: #00ff88; color: #00ff88;">UNBLOCK USER</a>
-                        {% endif %}
+                    {% if user.is_active %}
+                    <a href="/admin/toggle-block/{{ user.id }}" class="btn-block" style="text-decoration: none;">BLOCK
+                        USER</a>
                     {% else %}
-                        <span style="color: var(--text-muted); font-size: 0.8rem;">(Admin Account)</span>
+                    <a href="/admin/toggle-block/{{ user.id }}" class="btn-verify"
+                        style="text-decoration: none; border-color: #00ff88; color: #00ff88;">UNBLOCK USER</a>
+                    {% endif %}
+                    {% else %}
+                    <span style="color: var(--text-muted); font-size: 0.8rem;">(Admin Account)</span>
                     {% endif %}
                 </div>
             </div>
@@ -773,7 +919,7 @@
     function toggleDropdown() {
         document.getElementById('profileDropdown').classList.toggle('active');
     }
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         if (!event.target.matches('.profile-circle')) {
             var dropdowns = document.getElementsByClassName("dropdown-menu");
             for (var i = 0; i < dropdowns.length; i++) {
@@ -799,7 +945,7 @@
                 } else {
                     tr[i].style.display = "none";
                 }
-            }       
+            }
         }
     }
 
@@ -821,7 +967,7 @@
         const container = document.getElementById(containerId);
         const searchInput = document.getElementById(searchInputId);
         if (!container) return;
-        
+
         const items = Array.from(container.querySelectorAll(itemClass));
         let visibleCount = parseInt(sessionStorage.getItem(containerId + '_visibleCount')) || 3;
 
@@ -870,7 +1016,7 @@
     function initPagination(containerId, itemClass, isTable = false) {
         const container = document.getElementById(containerId);
         if (!container) return;
-        
+
         let items;
         if (isTable) {
             // FIXED: Only select rows that are NOT inside the hidden accordion tbodys
@@ -878,7 +1024,7 @@
         } else {
             items = Array.from(container.querySelectorAll(itemClass));
         }
-        
+
         let visibleCount = parseInt(sessionStorage.getItem(containerId + '_visibleCount')) || 5;
         if (items.length <= 5 && visibleCount <= 5) return;
 
@@ -896,7 +1042,7 @@
                     btn.innerHTML = 'See More ⬇️';
                     btn.className = 'btn-see-more';
                     btn.style.cssText = "display: block; margin: 15px auto; padding: 8px 25px; background: transparent; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; border-radius: 4px; font-family: 'Orbitron';";
-                    
+
                     btn.onclick = () => {
                         visibleCount += 5;
                         sessionStorage.setItem(containerId + '_visibleCount', visibleCount);
@@ -915,7 +1061,7 @@
         initPagination('table-admin-apps', 'tr', true);
         initPagination('table-admin-arrivals', 'tr', true);
         initPagination('table-admin-payments', 'tr', true);
-        
+
         initAdvancedPagination('admin-logs-list', '.log-item', 'admin-log-search');
         initAdvancedPagination('admin-users-list', '.user-card-item', 'admin-user-search');
     });
@@ -955,26 +1101,26 @@
 
     function openParkingModal() {
         document.getElementById('add-parking-modal').classList.add('active');
-        
+
         // Initialize map only when modal is open and map isn't initialized yet
         if (!adminMap) {
             // Wait slight delay so div is fully rendered
             setTimeout(() => {
                 adminMap = L.map('admin-map').setView([20.0110, 73.7903], 14); // Default Nashik
-                
+
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors',
                     subdomains: 'abcd',
                     maxZoom: 19
                 }).addTo(adminMap);
 
-                adminMap.on('click', async function(e) {
+                adminMap.on('click', async function (e) {
                     const lat = e.latlng.lat;
                     const lng = e.latlng.lng;
-                    
+
                     document.getElementById('form-lat').value = lat;
                     document.getElementById('form-lng').value = lng;
-                    
+
                     document.getElementById('coord-status').innerHTML = `<span style="color: #00ff88;">Selected: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span> <span style="font-size: 0.7rem;">(Fetching address...)</span>`;
                     document.getElementById('submit-btn').disabled = false;
                     document.getElementById('submit-btn').style.background = 'rgba(0, 242, 255, 0.2)';
@@ -1000,24 +1146,24 @@
     async function searchLocation() {
         let query = document.getElementById('location-name-input').value;
         if (!query) return;
-        
+
         document.getElementById('coord-status').innerHTML = `<span style="color: var(--text-muted);">Searching map for address...</span>`;
-        
+
         try {
             let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             let data = await res.json();
-            
+
             if (data && data.length > 0) {
                 let lat = parseFloat(data[0].lat);
                 let lng = parseFloat(data[0].lon);
-                
+
                 document.getElementById('form-lat').value = lat;
                 document.getElementById('form-lng').value = lng;
-                
+
                 document.getElementById('coord-status').innerHTML = `<span style="color: #00ff88;">Found: ${lat.toFixed(4)}, ${lng.toFixed(4)}</span>`;
                 document.getElementById('submit-btn').disabled = false;
                 document.getElementById('submit-btn').style.background = 'rgba(0, 242, 255, 0.2)';
-                
+
                 focusMapOn(lat, lng);
             } else {
                 document.getElementById('coord-status').innerHTML = `<span style="color: #ff0055;">Address not found on map.</span>`;
@@ -1049,16 +1195,16 @@
         let tb = document.getElementById('app-' + appId);
         if (tb.style.display === 'none') {
             tb.style.display = 'table-row-group';
-            
+
             // Render Leaflet Map dynamically inside the accordion!
-            if (!inlineMaps['app-'+appId] && lat && lng) {
+            if (!inlineMaps['app-' + appId] && lat && lng) {
                 setTimeout(() => {
                     let m = L.map('inline-map-' + appId).setView([lat, lng], 15);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap'
                     }).addTo(m);
                     L.marker([lat, lng]).addTo(m);
-                    inlineMaps['app-'+appId] = m;
+                    inlineMaps['app-' + appId] = m;
                 }, 100);
             }
         } else {
@@ -1074,15 +1220,15 @@
         let tb = document.getElementById('slots-' + groupId);
         if (tb.style.display === 'none') {
             tb.style.display = 'table-row-group';
-            
-            if (!inlineMaps['group-'+groupId] && lat && lng) {
+
+            if (!inlineMaps['group-' + groupId] && lat && lng) {
                 setTimeout(() => {
                     let m = L.map('group-map-' + groupId).setView([lat, lng], 15);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap'
                     }).addTo(m);
                     L.marker([lat, lng]).addTo(m);
-                    inlineMaps['group-'+groupId] = m;
+                    inlineMaps['group-' + groupId] = m;
                 }, 100);
             }
         } else {
@@ -1091,14 +1237,14 @@
     }
 
     // --- FIXED: SMART AUTO-REFRESH (10S) WITH PERSISTENCE CHECK ---
-    setInterval(function() {
+    setInterval(function () {
         const focusedElement = document.activeElement;
         const isUserTyping = focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA');
         const hasSearchText = Array.from(document.querySelectorAll('.cyber-search, .section-search')).some(input => input.value.trim() !== "");
-        
+
         // Check if the modal is open
         const isModalOpen = document.getElementById('add-parking-modal').classList.contains('active');
-        
+
         // Check if any accordion row is expanded (display: table-row-group)
         const isAccordionOpen = Array.from(document.querySelectorAll('tbody[id^="app-"], tbody[id^="slots-"]')).some(tbody => tbody.style.display === 'table-row-group');
 
